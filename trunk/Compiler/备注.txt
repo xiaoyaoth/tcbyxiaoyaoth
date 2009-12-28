@@ -1,0 +1,12 @@
+
+Translate:
+Level里没写过的类：(Translate.)AccessList,(Translate.)Access,Frame.AccessList Frame.Frame
+AccessList: (Translate.)Access;
+Access:(Translate.)Level,Frame.Access
+
+Frame:
+AccessList
+Access:Tree.Expr
+
+Tree:
+把Exp改成Expr，因为有一个EXP，windows不区分大小写，认为重名
