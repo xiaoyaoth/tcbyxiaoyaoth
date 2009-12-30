@@ -1,6 +1,6 @@
 
 Translate:
-Level里没写过的类：(Translate.)AccessList,(Translate.)Access,Frame.AccessList Frame.Frame
+Level：(Translate.)AccessList,(Translate.)Access,Frame.AccessList Frame.Frame
 AccessList: (Translate.)Access;
 Access:(Translate.)Level,Frame.Access
 
@@ -10,3 +10,8 @@ Access:Tree.Expr
 
 Tree:
 把Exp改成Expr，因为有一个EXP，windows不区分大小写，认为重名
+
+Sement:
+CallExp: CallExp.args记录了实参,要与形参相比较；
+		形参的获得方法是通过在env.vEnv中招CallExp.func, 返回的funcEntry中formals记录了形参的类型。
+RecordExp:tEnv中binding是Type,vEnv中binding是Entry,检查类型，从tEnv中得到binding判断是不是RECORD类型。

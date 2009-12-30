@@ -14,7 +14,7 @@ public class Parse {
 			throw new Error("File not found: " + filename);
 		}
 		parser parser = new parser(new Yylex(inp, errorMsg), errorMsg);
-		// parser parser = new parser(new Yylex(System.in,errorMsg), errorMsg);
+		//parser parser = new parser(new Yylex(System.in,errorMsg), errorMsg);
 
 		try {
 			parser./* debug_ */parse();
