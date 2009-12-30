@@ -2,6 +2,7 @@ package Semant;
 
 import Translate.*;
 import Types.Type;
+
 class ExpTy {
 	Exp exp;
 	Type ty;
