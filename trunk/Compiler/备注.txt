@@ -12,6 +12,21 @@ Tree:
 把Exp改成Expr，因为有一个EXP，windows不区分大小写，认为重名
 
 Sement:
-CallExp: CallExp.args记录了实参,要与形参相比较；
-		形参的获得方法是通过在env.vEnv中招CallExp.func, 返回的funcEntry中formals记录了形参的类型。
-RecordExp:tEnv中binding是Type,vEnv中binding是Entry,检查类型，从tEnv中得到binding判断是不是RECORD类型。
+CallExp: 
+CallExp.args记录了实参,要与形参相比较；
+形参的获得方法是通过在env.vEnv中招CallExp.func, 返回的funcEntry中formals记录了形参的类型。
+
+RecordExp:
+tEnv中binding是Type,vEnv中binding是Entry,检查类型，从tEnv中得到binding判断是不是RECORD类型。
+当定义一个类型(RecordTy)时，便将这个类型放入tEnv,当遇到RecordExp时，从tEnv中找到这个类型，然后看看这个Exp的信息和放入的以不一样（包括type中每一小项的名字，和每一小项的类型）
+
+ArrayExp:
+直接检查ArrayExp中的类型和tEnv中的类型即可
+
+WhileExp:
+不太懂Label的作用。
+
+FieldVar:
+一个filed写成这样xx = {a:int, b:string, c:any}(假设any={c:int, d:string})
+引用的时候肯定写成这样的形式xx.x,比如xx.a。类型检查时就逐个xx里的声明的类型与x比较
+如果找到就返回x的类型，没找到就报错。这里的x相当于类里的私有成员。
