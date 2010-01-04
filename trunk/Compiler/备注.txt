@@ -30,3 +30,12 @@ FieldVar:
 一个filed写成这样xx = {a:int, b:string, c:any}(假设any={c:int, d:string})
 引用的时候肯定写成这样的形式xx.x,比如xx.a。类型检查时就逐个xx里的声明的类型与x比较
 如果找到就返回x的类型，没找到就报错。这里的x相当于类里的私有成员。
+
+检测时没有解决的
+test12; test16; test3(运行似乎进入死循环)
+test21（和test4类似，唯一的不同是test21不知道返回什么值）
+检测时解决的问题：
+test18（不慎把ExpTy body = transExp(d.body)放入循环，导致判断函数是否存在时判断了两次）；
+test19(返回的entry为null的话，取不到ty值，这是应随便返回个什么，我返回的是void，学长返回的是int，最好都改成int，这样的话callexp得时候会发生类型不匹配，这应该是正确的)；
+
+		

@@ -16,7 +16,9 @@ public class NAME extends Type {
       return any;
      }
      
-   public Type actual() {return binding.actual();}
+   public Type actual() {
+	   System.out.println(binding);
+	   return binding.actual();}
 
    public boolean coerceTo(Type t) {
 	return this.actual().coerceTo(t);

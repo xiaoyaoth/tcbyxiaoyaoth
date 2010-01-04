@@ -3,10 +3,9 @@ package Semant;
 import java.util.HashSet;
 
 import Absyn.*;
-import Translate.Level;
-import Temp.Label;
 import Types.INT;
 import Types.NIL;
+import Types.NONE;
 import Types.RECORD;
 import Types.STRING;
 import Types.Type;
@@ -19,11 +18,7 @@ public class Semant {
 	public boolean errorFlag = false;
 	Env env;
 
-	Level current_lv;// current_level
-	Label current_lb;// current_label
 	int loopMark;
-
-	//ErrorMsg.ErrorMsg err = env.error;
 
 	public Semant(ErrorMsg.ErrorMsg err) {
 		this(new Env(err, null));
@@ -37,8 +32,9 @@ public class Semant {
 	 * tool functions
 	 */
 	Translate.Exp checkInt(ExpTy et, int pos) {
-		if (!(et.ty.actual() instanceof INT))
-			env.error.error(pos, "integer required");
+		if (!(et.ty.actual() instanceof INT)){
+			System.out.println(et.ty.actual());
+			env.error.error(pos, "integer required");}
 		return et.exp;
 	}
 
@@ -48,11 +44,12 @@ public class Semant {
 		boolean r_rcd = r_ty.actual() instanceof RECORD;
 		boolean r_nil = r_ty.actual() instanceof NIL;
 		boolean others = l_ty.actual().coerceTo(r_ty);
-		return ((l_rcd && r_rcd) || (l_nil && r_nil) || (!l_nil && !r_nil || others));
+		return ((l_rcd && r_nil) || (l_nil && r_rcd) || (!l_nil && !r_nil && others));
 	}
 
 	boolean isLoopVar(SimpleVar v) {
 		Entry entry = (Entry) env.vEnv.get(v.name);
+		//System.out.println(entry.getClass());
 		if (entry instanceof LoopVarEntry)
 			return true;
 		else
@@ -64,6 +61,12 @@ public class Semant {
 			return null;
 		else
 			return new BoolList(flist.escape, makeBoolList(flist.tail));
+	}
+	
+	public void transProg(Exp exp) {
+		transExp(exp);
+		errorFlag = env.error.anyErrors;
+		//System.out.println(returnValue); /*debug*/
 	}
 	
 	/*
@@ -173,7 +176,7 @@ public class Semant {
 	// ArrayExp
 	ExpTy transExp(ArrayExp e) {
 		Type ty = (Type) env.tEnv.get(e.typ);
-		if (ty == null || !(ty instanceof ARRAY))
+		if (ty == null || !(ty.actual() instanceof ARRAY))
 			env.error.error(e.pos, "ArrayExp:array not defined");
 
 		ExpTy array_range = (ExpTy) transExp(e.size);
@@ -181,20 +184,20 @@ public class Semant {
 
 		ARRAY array_ty = (ARRAY) ty.actual();
 		ExpTy expr_ty = transExp(e.init);
-		if (array_ty.element.actual().coerceTo(expr_ty.ty))
+		if (!array_ty.element.actual().coerceTo(expr_ty.ty.actual()))
 			env.error.error(e.pos, "ArrayExp:not the same type as declared");
 		return new ExpTy(null, array_ty);
 	}
 
 	// AssignExp
 	ExpTy transExp(AssignExp e) {
-		if (e.var instanceof SimpleVar && !isLoopVar((SimpleVar) e.var))
-			env.error.error(e.var.pos, "AssignExp:not Simple variable");
+		if (e.var instanceof SimpleVar && isLoopVar((SimpleVar) e.var))
+			env.error.error(e.var.pos, "AssignExp:loop variable");
 		ExpTy r = (ExpTy) transExp(e.exp);
 		if (r.ty instanceof VOID)
 			env.error.error(e.exp.pos, "AssignExp:can't assign a void to variable");
 		ExpTy l = (ExpTy) transVar(e.var);
-		if (!r.ty.actual().coerceTo(l.ty))
+		if (!r.ty.actual().coerceTo(l.ty)&& !(l.ty.actual() instanceof NONE)&&!(r.ty.actual() instanceof NONE))
 			env.error.error(e.pos, "AssignExp:cannot assign a " + r.ty.toString()
 					+ " to " + l.ty.toString());
 		return new ExpTy(null, new VOID());
@@ -210,20 +213,20 @@ public class Semant {
 	// CallExp
 	ExpTy transExp(CallExp e) {
 		Entry func_entry = (Entry) env.vEnv.get(e.func);
-		if (func_entry == null)
+		if (func_entry == null){
+			env.error.error(e.pos, "function ["+e.func+ "] not defined");
+			return new ExpTy(null, new VOID());
+			}
+		if (!(func_entry instanceof FuncEntry || func_entry instanceof StdFuncEntry))
 			env.error.error(e.pos, "CallExp:function is not declared");
-		if (!(func_entry instanceof FuncEntry)
-				&& !(func_entry instanceof StdFuncEntry)) {
-			env.error.error(e.pos, "CallExp:not find function with the id of "
-					+ e.func);
-		}
 
 		ExpList argr = e.args;// 实参
 		RECORD argf = ((FuncEntry) func_entry).formals;// 形参
 		for (; argr != null && argf != null; argr = argr.tail, argf = argf.tail) {
 			ExpTy arg_result = transExp(argr.head);
 			if (!arg_result.ty.actual().coerceTo(argf.fieldType))
-				env.error.error(argr.head.pos,"CallExp:argument type is not matched");
+				env.error.error(argr.head.pos,
+						"CallExp:argument type ["+arg_result.ty.actual()+"] does not match request type ["+argf.fieldType.getClass()+"]");
 		}
 
 		if (argr != null)
@@ -238,22 +241,17 @@ public class Semant {
 	// ForExp
 	ExpTy transExp(ForExp e) {
 		loopMark++;
-		// Label labelTmp = current_lb;
-		// current_lb = new Label();
 
 		ExpTy low = transExp(e.var.init);
 		ExpTy high = transExp(e.hi);
 
 		checkInt(low, e.var.init.pos);
 		checkInt(high, e.hi.pos);
-		Translate.Access varAcc = current_lv.allocLocal(e.var.escape);
-
 		env.vEnv.beginScope();
-		env.vEnv.put(e.var.name, new LoopVarEntry(varAcc, new INT()));
+		env.vEnv.put(e.var.name, new LoopVarEntry(new INT()));
 		transExp(e.body);
 		env.vEnv.endScope();
 
-		// current_lb = labelTmp;
 		loopMark--;
 
 		return new ExpTy(null, new VOID());
@@ -266,7 +264,7 @@ public class Semant {
 		ExpTy else_ty = transExp(e.elseclause);
 
 		checkInt(test_ty, e.test.pos);
-		if (e.elseclause != null) {
+		if (e.elseclause == null) {
 			if (!(then_ty.ty.actual() instanceof VOID))
 				env.error.error(e.pos, "then-clause should not return value");
 		} else if (!equalTy(then_ty.ty, else_ty.ty))
@@ -279,7 +277,7 @@ public class Semant {
 		env.vEnv.beginScope();
 		env.tEnv.beginScope();
 
-		for (DecList dec_list = e.decs; dec_list != null; dec_list = e.decs.tail)
+		for (DecList dec_list = e.decs; dec_list != null; dec_list = dec_list.tail)
 			transDec(dec_list.head);
 
 		ExpTy let_body = transExp(e.body);
@@ -311,16 +309,16 @@ public class Semant {
 				env.error.error(e.right.pos, "OpExp.right can't be void");
 			if (l.ty.actual() instanceof NIL && r.ty.actual() instanceof NIL)
 				env.error.error(e.pos, "OpExp LR can't all be NIL");
-			if (equalTy(l.ty, r.ty))
-				env.error.error(e.pos, "OpExp LR are not equal type");
+			if (!equalTy(l.ty, r.ty)){
+				env.error.error(e.pos, "OpExp LR are not equal type");};
 			break;
 		case OpExp.LT:
 		case OpExp.LE:
 		case OpExp.GT:
 		case OpExp.GE:
 			if (!(l.ty.actual() instanceof INT && r.ty.actual() instanceof INT)
-					|| !(l.ty.actual() instanceof STRING && r.ty.actual() instanceof STRING))
-				env.error.error(e.pos, "OpExp LR must be equally int or string");
+					&& !(l.ty.actual() instanceof STRING && r.ty.actual() instanceof STRING)){
+				env.error.error(e.pos, "OpExp LR must be equally int or string");}
 			break;
 		}
 		return new ExpTy(null, new INT());
@@ -329,14 +327,14 @@ public class Semant {
 	// RecordExp
 	ExpTy transExp(RecordExp e) {
 		Type ty = (Type) env.tEnv.get(e.typ);
-		if (ty == null || !(ty instanceof RECORD))
-			env.error.error(e.pos, "RecordExp: wrong record type");
+		if (ty == null || !(ty.actual() instanceof RECORD)){
+			env.error.error(e.pos, "RecordExp: ["+e.typ+"] wrong record type");}
 
 		FieldExpList fieldexpr = e.fields;
 		RECORD fieldty = (RECORD) ty.actual(), result = fieldty;
 		for (; fieldexpr != null && fieldty != null; fieldexpr = fieldexpr.tail, fieldty = fieldty.tail) {
 			if (!fieldexpr.name.equals(fieldty.fieldName))
-				env.error.error(fieldexpr.pos,"RecordExp:field name is not matched");
+				env.error.error(fieldexpr.pos,"RecordExp: ["+fieldexpr.name+"] field name is not matched");
 			ExpTy fexpr_ty = (ExpTy) transExp(fieldexpr.init);
 			if (!equalTy(fexpr_ty.ty, fieldty.fieldType))
 				env.error.error(fieldexpr.pos,"RecordExp:this field's type doesn't match what declared");
@@ -369,9 +367,11 @@ public class Semant {
 	ExpTy transExp(SeqExp e) {
 		ExpList elist = e.list;
 		ExpTy result = null;
-		for (; elist != null; elist = e.list.tail)
-			result = transExp(elist.head);
-		return new ExpTy(null, result.ty);
+		if(e == null || elist == null)
+			return new ExpTy(null, new VOID());
+		for (int i = 0; elist != null; elist = elist.tail, i++){
+			result = transExp(elist.head);}
+		return result;
 	}
 
 	/*
@@ -384,9 +384,10 @@ public class Semant {
 	// SimpleVar
 	ExpTy transVar(SimpleVar v) {
 		Entry var_entry = (Entry) env.vEnv.get(v.name);
-		if (var_entry == null || !(var_entry instanceof VarEntry)) {
+		if (var_entry == null||!(var_entry instanceof VarEntry)) {
 			env.error.error(v.pos,
-					"SimpleVar: variable of this type is not defined");
+					"SimpleVar: variable ["+v.name+"] is not defined");
+			return new ExpTy(null, new VOID()); 
 		}
 		return new ExpTy(null, ((VarEntry) var_entry).ty.actual());
 	}
@@ -404,7 +405,7 @@ public class Semant {
 
 	// FieldVar
 	ExpTy transVar(FieldVar v) {
-		Type ty = new INT();
+		Type ty = new NONE();
 		ExpTy var_ty = transVar(v.var);
 
 		if (!(var_ty.ty.actual() instanceof RECORD))
@@ -433,9 +434,11 @@ public class Semant {
 	// NameTy
 	Type transTy(NameTy t) {
 		Type ty = (Type) env.tEnv.get(t.name);
-		if (ty == null)
+		if (ty == null){
 			env.error.error(t.pos, "NameTy: type not defined");
-		return ty.actual();
+			return new INT();
+		}
+		return ty;
 	}
 
 	// ArrayTy
@@ -448,19 +451,18 @@ public class Semant {
 
 	// RecordTy
 	Type transTy(RecordTy t) {
-		RECORD result = new RECORD(null, new VOID(), null);
+		RECORD result = null;
 		if (t.fields == null)
-			return result;
+			return new RECORD(null, new VOID(), null);
 		else {
 			FieldList flist = t.fields;
-			result = new RECORD(null, null, null);
 			for (; flist != null; flist = flist.tail) {
-				Type ty = (Type) env.tEnv.get(flist.name);
+				Type ty = (Type) env.tEnv.get(flist.typ);
 				if (ty == null) {
-					env.error.error(flist.pos, "type not defined");
+					env.error.error(flist.pos, "RecordTy: ["+ flist.name +"] type not defined");
 					break;
 				} else {
-					if (result.fieldName == null)
+					if (result == null)
 						result = new RECORD(flist.name, ty, null);
 					else
 						result.tail = new RECORD(flist.name, ty, null);
@@ -482,7 +484,7 @@ public class Semant {
 		if(null == d.init)
 			env.error.error(d.pos, "VarDec: variable not initialized");
 		else{
-			Type typ_ty = new INT();
+			Type typ_ty = new NONE();
 			ExpTy init_ty = transExp(d.init);
 			if(d.typ == null ){
 				if(init_ty.ty.actual() instanceof NIL)
@@ -494,8 +496,7 @@ public class Semant {
 			if(!typ_ty.actual().coerceTo(init_ty.ty))
 				env.error.error(d.pos,"VarDec: type not match");
 			}
-			Translate.Access varAcc = current_lv.allocLocal(d.escape);
-			env.vEnv.put(d.name, new VarEntry(varAcc, typ_ty));
+			env.vEnv.put(d.name, new VarEntry(typ_ty));
 			}
 		return null;
 	}
@@ -505,20 +506,20 @@ public class Semant {
 		HashSet<Symbol.Symbol> set = new HashSet<Symbol.Symbol>();
 		TypeDec temp = d;
 		
-		for(; temp!=null; temp=temp.next){
-			if(set.contains(temp.name))
-				env.error.error(temp.pos, "TypeDec: type redefined");
-			set.add(temp.name);
-			env.tEnv.put(temp.name, new NAME(temp.name));
+		for(; d!=null; d=d.next){
+			if(set.contains(d.name))
+				env.error.error(d.pos, "TypeDec: type redefined");
+			set.add(d.name);
+			env.tEnv.put(d.name, new NAME(d.name));
 		}
 		
-		for(temp = d; temp != null; temp = temp.next)
-			((NAME)env.tEnv.get(temp.name)).bind(transTy(temp.ty));
+		for(d = temp; d != null; d = d.next){
+			((NAME)env.tEnv.get(d.name)).bind(transTy(d.ty));}
 		
-		for(temp = d; temp != null; temp = temp.next){
+		for(d = temp; d != null; d = d.next){
 			NAME name_entry = (NAME)env.tEnv.get(d.name);
 			if(name_entry.isLoop()){
-				env.error.error(temp.pos, "TypeDec: cylic declaration found");
+				env.error.error(d.pos, "TypeDec: cylic declaration found");
 				name_entry.bind(new INT());
 			}
 		}
@@ -529,8 +530,7 @@ public class Semant {
 	Translate.Exp transDec(FunctionDec d){
 		HashSet<Symbol.Symbol> set = new HashSet<Symbol.Symbol>();
 		FunctionDec temp = d;
-		Level lv_temp = current_lv;
-		
+
 		for(; d != null; d = d.next){
 			if(set.contains(d.name))
 				env.error.error(d.pos, "FunctionDec: function name redefined");
@@ -538,39 +538,30 @@ public class Semant {
 			
 			RECORD para_ty = (RECORD)transTy(new RecordTy(d.pos, d.params));
 			
-			Type result_ty = new VOID();
+			Type result_ty = new NONE();
 			if(d.result != null)
 				result_ty = transTy(d.result);
-			
-			current_lv = new Level(lv_temp, d.name, makeBoolList(d.params));
-			Label entry_label = new Label(d.name.toString());
-			env.vEnv.put(d.name, new FuncEntry(para_ty, result_ty, entry_label, current_lv));
+			env.vEnv.put(d.name, new FuncEntry(para_ty, result_ty));
 		}
-		
-		current_lv = lv_temp;
-		
+	
 		for(d = temp; d!=null; d = d.next){
 			env.vEnv.beginScope();
 			int loopMark_temp = loopMark;
 			loopMark = 0;
 			
 			if(env.vEnv.get(d.name)instanceof FuncEntry){
-				Level lv_temp2 = current_lv;
-				current_lv = ((FuncEntry)env.vEnv.get(d.name)).level;
-				Translate.AccessList fmls = current_lv.formals.tail;
-				
-				for(FieldList flist = d.params; flist!=null; flist = flist.tail, fmls = fmls.tail){
+				for(FieldList flist = d.params; flist!=null; flist = flist.tail){
 					Type ty = (Type)env.tEnv.get(flist.typ);
 					if(ty == null)
 						env.error.error(flist.pos, "type undefined");
 					else
-						env.vEnv.put(flist.name, new VarEntry(new Translate.Access(current_lv, fmls.head.access), ty));
-					
-					ExpTy body_ty = transExp(d.body);
-					if(!body_ty.ty.actual().coerceTo(((FuncEntry)env.vEnv.get(d.name)).result))
-						env.error.error(d.pos, "type not matched");
-					current_lv = lv_temp2;
+						env.vEnv.put(flist.name, new VarEntry(ty));
 				}
+				ExpTy body_ty = transExp(d.body);
+				if(!body_ty.ty.actual().coerceTo(((FuncEntry)env.vEnv.get(d.name)).result)
+						&& !(body_ty.ty.actual() instanceof NONE)
+						&&!(((FuncEntry)env.vEnv.get(d.name)).result.actual() instanceof NONE))
+					env.error.error(d.pos, "type not matched");
 				loopMark = loopMark_temp;
 				env.vEnv.endScope();
 			}
