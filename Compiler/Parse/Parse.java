@@ -1,5 +1,8 @@
 package Parse;
 
+import Semant.Semant;
+import Translate.Level;
+
 public class Parse {
 
 	public ErrorMsg.ErrorMsg errorMsg;
@@ -14,11 +17,14 @@ public class Parse {
 			throw new Error("File not found: " + filename);
 		}
 		parser parser = new parser(new Yylex(inp, errorMsg), errorMsg);
+		Semant s = new Semant(errorMsg);
 		//parser parser = new parser(new Yylex(System.in,errorMsg), errorMsg);
 
 		try {
 			parser./* debug_ */parse();
 			print.prExp(parser.parseResult, 0);
+			System.out.println();
+			s.transProg(parser.parseResult);
 			System.out.println("Succeed");
 
 		} catch (Throwable e) {

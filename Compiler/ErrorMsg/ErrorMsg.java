@@ -24,15 +24,14 @@ public class ErrorMsg {
 
 		while (p != null) {
 			if (p.head < pos) {
-				sayPos = ":" + String.valueOf(n) + "."
-						+ String.valueOf(pos - p.head);
+				sayPos = String.valueOf(n) + "." + String.valueOf(pos - p.head);
 				break;
 			}
 			p = p.tail;
 			n--;
 		}
 
-		System.out.println(filename + ":" + sayPos + ": " + msg);
+		System.out.println(sayPos + ": " + msg + " [" + filename + "]");
 	}
 
 	public static void Assert(boolean expr) {
