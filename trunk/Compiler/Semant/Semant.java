@@ -17,11 +17,10 @@ import Util.BoolList;
 public class Semant {
 	public boolean errorFlag = false;
 	Env env;
-
 	int loopMark;
 
 	public Semant(ErrorMsg.ErrorMsg err) {
-		this(new Env(err, null));
+		this(new Env(err));
 	}
 
 	Semant(Env e) {
@@ -32,9 +31,9 @@ public class Semant {
 	 * tool functions
 	 */
 	Translate.Exp checkInt(ExpTy et, int pos) {
-		if (!(et.ty.actual() instanceof INT)){
-			System.out.println(et.ty.actual());
-			env.error.error(pos, "integer required");}
+		if (!(et.ty.actual() instanceof INT) &&!(et.ty.actual() instanceof NONE)) {
+			env.error.error(pos, "integer required");
+		}
 		return et.exp;
 	}
 
@@ -49,33 +48,31 @@ public class Semant {
 
 	boolean isLoopVar(SimpleVar v) {
 		Entry entry = (Entry) env.vEnv.get(v.name);
-		//System.out.println(entry.getClass());
 		if (entry instanceof LoopVarEntry)
 			return true;
 		else
 			return false;
 	}
 
-	BoolList makeBoolList(FieldList flist){
+	BoolList makeBoolList(FieldList flist) {
 		if (flist == null)
 			return null;
 		else
 			return new BoolList(flist.escape, makeBoolList(flist.tail));
 	}
-	
+
 	public void transProg(Exp exp) {
 		transExp(exp);
 		errorFlag = env.error.anyErrors;
-		//System.out.println(returnValue); /*debug*/
 	}
-	
+
 	/*
 	 * tool function ends
 	 */
 	/*
 	 * type_checking interface
 	 */
-	
+
 	// expr type_checking
 	ExpTy transExp(Exp e) {
 		if (e instanceof ArrayExp)
@@ -148,7 +145,7 @@ public class Semant {
 
 	/*
 	 * type checking interface ends
-	 */	
+	 */
 	/*
 	 * type checking very specific expression;
 	 */
@@ -195,11 +192,13 @@ public class Semant {
 			env.error.error(e.var.pos, "AssignExp:loop variable");
 		ExpTy r = (ExpTy) transExp(e.exp);
 		if (r.ty instanceof VOID)
-			env.error.error(e.exp.pos, "AssignExp:can't assign a void to variable");
+			env.error.error(e.exp.pos,
+					"AssignExp:can't assign a void to variable");
 		ExpTy l = (ExpTy) transVar(e.var);
-		if (!r.ty.actual().coerceTo(l.ty)&& !(l.ty.actual() instanceof NONE)&&!(r.ty.actual() instanceof NONE))
-			env.error.error(e.pos, "AssignExp:cannot assign a " + r.ty.toString()
-					+ " to " + l.ty.toString());
+		if (!r.ty.actual().coerceTo(l.ty) && !(l.ty.actual() instanceof NONE)
+				&& !(r.ty.actual() instanceof NONE))
+			env.error.error(e.pos, "AssignExp:cannot assign a "
+					+ r.ty.toString() + " to " + l.ty.toString());
 		return new ExpTy(null, new VOID());
 	}
 
@@ -213,10 +212,10 @@ public class Semant {
 	// CallExp
 	ExpTy transExp(CallExp e) {
 		Entry func_entry = (Entry) env.vEnv.get(e.func);
-		if (func_entry == null){
-			env.error.error(e.pos, "function ["+e.func+ "] not defined");
+		if (func_entry == null) {
+			env.error.error(e.pos, "function [" + e.func + "] not defined");
 			return new ExpTy(null, new VOID());
-			}
+		}
 		if (!(func_entry instanceof FuncEntry || func_entry instanceof StdFuncEntry))
 			env.error.error(e.pos, "CallExp:function is not declared");
 
@@ -224,15 +223,19 @@ public class Semant {
 		RECORD argf = ((FuncEntry) func_entry).formals;// пн╡н
 		for (; argr != null && argf != null; argr = argr.tail, argf = argf.tail) {
 			ExpTy arg_result = transExp(argr.head);
-			if (!arg_result.ty.actual().coerceTo(argf.fieldType))
-				env.error.error(argr.head.pos,
-						"CallExp:argument type ["+arg_result.ty.actual()+"] does not match request type ["+argf.fieldType.getClass()+"]");
+			if (!arg_result.ty.actual().coerceTo(argf.fieldType)&&!(arg_result.ty.actual() instanceof NONE))
+				env.error.error(argr.head.pos, "CallExp:argument type ["
+						+ arg_result.ty.actual()
+						+ "] does not match request type ["
+						+ argf.fieldType.getClass() + "]");
 		}
 
 		if (argr != null)
-			env.error.error(argr.head.pos, "CallExp:more arguments than declared");
-		if (argf != null)
-			env.error.error(argr.head.pos, "CallExp:lesser arguments than declared");
+			env.error.error(argr.head.pos,
+					"CallExp:more arguments than declared");
+		if (argf != null){
+			System.out.println(argf.fieldName);
+			env.error.error(e.pos, "CallExp:lesser arguments than declared");}
 
 		Type resultTy = ((FuncEntry) env.vEnv.get(e.func)).result;
 		return new ExpTy(null, resultTy);
@@ -266,9 +269,10 @@ public class Semant {
 		checkInt(test_ty, e.test.pos);
 		if (e.elseclause == null) {
 			if (!(then_ty.ty.actual() instanceof VOID))
-				env.error.error(e.pos, "then-clause should not return value");
-		} else if (!equalTy(then_ty.ty, else_ty.ty))
-			env.error.error(e.pos,"values returned from different condition is not matched");
+				env.error.error(e.pos, "IfExp: then-clause should not return value");
+		} else if (!equalTy(then_ty.ty.actual(), else_ty.ty.actual())){
+			env.error.error(e.pos,
+					"IfExp :values returned from different condition is not matched");}
 		return new ExpTy(null, then_ty.ty.actual());
 	}
 
@@ -309,16 +313,20 @@ public class Semant {
 				env.error.error(e.right.pos, "OpExp.right can't be void");
 			if (l.ty.actual() instanceof NIL && r.ty.actual() instanceof NIL)
 				env.error.error(e.pos, "OpExp LR can't all be NIL");
-			if (!equalTy(l.ty, r.ty)){
-				env.error.error(e.pos, "OpExp LR are not equal type");};
+			if (!equalTy(l.ty, r.ty)) {
+				env.error.error(e.pos, "OpExp LR are not equal type");
+			}
+			;
 			break;
 		case OpExp.LT:
 		case OpExp.LE:
 		case OpExp.GT:
 		case OpExp.GE:
 			if (!(l.ty.actual() instanceof INT && r.ty.actual() instanceof INT)
-					&& !(l.ty.actual() instanceof STRING && r.ty.actual() instanceof STRING)){
-				env.error.error(e.pos, "OpExp LR must be equally int or string");}
+					&& !(l.ty.actual() instanceof STRING && r.ty.actual() instanceof STRING)) {
+				env.error
+						.error(e.pos, "OpExp LR must be equally int or string");
+			}
 			break;
 		}
 		return new ExpTy(null, new INT());
@@ -327,25 +335,32 @@ public class Semant {
 	// RecordExp
 	ExpTy transExp(RecordExp e) {
 		Type ty = (Type) env.tEnv.get(e.typ);
-		if (ty == null || !(ty.actual() instanceof RECORD)){
-			env.error.error(e.pos, "RecordExp: ["+e.typ+"] wrong record type");}
+		if (ty == null || !(ty.actual() instanceof RECORD)) {
+			env.error.error(e.pos, "RecordExp: [" + e.typ
+					+ "] wrong record type");
+			return new ExpTy(null, new NONE());
+		} else {
+			FieldExpList fieldexpr = e.fields;
+			RECORD fieldty = (RECORD) ty.actual(), result = fieldty;
+			for (; fieldexpr != null && fieldty != null; fieldexpr = fieldexpr.tail, fieldty = fieldty.tail) {
+				if (!fieldexpr.name.equals(fieldty.fieldName)) {
+					env.error.error(fieldexpr.pos, "RecordExp: ["
+							+ fieldexpr.name + "] field name is not matched");
+				}
+				ExpTy fexpr_ty = (ExpTy) transExp(fieldexpr.init);
+				if (!equalTy(fexpr_ty.ty, fieldty.fieldType))
+					env.error
+							.error(fieldexpr.pos,
+									"RecordExp: this field's type doesn't match what declared");
+			}
+			if (fieldexpr != null)
+				env.error.error(fieldexpr.pos,
+						"RecordExp: more fields than declared");
+			if (fieldty != null)
+				env.error.error(e.pos, "RecordExp: less fields than declared");
 
-		FieldExpList fieldexpr = e.fields;
-		RECORD fieldty = (RECORD) ty.actual(), result = fieldty;
-		for (; fieldexpr != null && fieldty != null; fieldexpr = fieldexpr.tail, fieldty = fieldty.tail) {
-			if (!fieldexpr.name.equals(fieldty.fieldName))
-				env.error.error(fieldexpr.pos,"RecordExp: ["+fieldexpr.name+"] field name is not matched");
-			ExpTy fexpr_ty = (ExpTy) transExp(fieldexpr.init);
-			if (!equalTy(fexpr_ty.ty, fieldty.fieldType))
-				env.error.error(fieldexpr.pos,"RecordExp:this field's type doesn't match what declared");
+			return new ExpTy(null, result);
 		}
-
-		if (fieldexpr != null)
-			env.error.error(fieldexpr.pos, "more fields than declared");
-		if (fieldty != null)
-			env.error.error(e.pos, "less fields than declared");
-
-		return new ExpTy(null, result);
 	}
 
 	// WhileExp
@@ -367,10 +382,11 @@ public class Semant {
 	ExpTy transExp(SeqExp e) {
 		ExpList elist = e.list;
 		ExpTy result = null;
-		if(e == null || elist == null)
+		if (e == null || elist == null)
 			return new ExpTy(null, new VOID());
-		for (int i = 0; elist != null; elist = elist.tail, i++){
-			result = transExp(elist.head);}
+		for (int i = 0; elist != null; elist = elist.tail, i++) {
+			result = transExp(elist.head);
+		}
 		return result;
 	}
 
@@ -384,10 +400,10 @@ public class Semant {
 	// SimpleVar
 	ExpTy transVar(SimpleVar v) {
 		Entry var_entry = (Entry) env.vEnv.get(v.name);
-		if (var_entry == null||!(var_entry instanceof VarEntry)) {
-			env.error.error(v.pos,
-					"SimpleVar: variable ["+v.name+"] is not defined");
-			return new ExpTy(null, new VOID()); 
+		if (var_entry == null || !(var_entry instanceof VarEntry)) {
+			env.error.error(v.pos, "SimpleVar: variable [" + v.name
+					+ "] is not defined");
+			return new ExpTy(null, new NONE());
 		}
 		return new ExpTy(null, ((VarEntry) var_entry).ty.actual());
 	}
@@ -395,12 +411,16 @@ public class Semant {
 	// SubscriptVar
 	ExpTy transVar(SubscriptVar v) {
 		ExpTy var_ty = transVar(v.var);
-		ExpTy index_ty = transExp(v.index);
-		if (!(var_ty.ty instanceof ARRAY))
+		if (!(var_ty.ty.actual() instanceof ARRAY)) {
 			env.error.error(v.pos, "SubscriptVar: not array type");
-		checkInt(index_ty, v.index.pos);
-		return new ExpTy(null, ((ARRAY) var_ty.ty.actual()).element);
-		// array defined the types of the element as a member ARRAY class
+			return new ExpTy(null, new Types.NONE());
+		} else {
+			ExpTy index_ty = transExp(v.index);
+			checkInt(index_ty, v.index.pos);
+			return new ExpTy(null, ((ARRAY) var_ty.ty.actual()).element);
+		}
+
+		// array defines the types of the element as a member ARRAY class
 	}
 
 	// FieldVar
@@ -422,7 +442,8 @@ public class Semant {
 			}
 			if (!found)
 				env.error.error(v.pos,
-						"FieldVar: not found any field match the reference");
+						"FieldVar: not found any field match the reference ["
+								+ v.field + "]");
 		}
 		return new ExpTy(null, ty);
 	}
@@ -434,9 +455,9 @@ public class Semant {
 	// NameTy
 	Type transTy(NameTy t) {
 		Type ty = (Type) env.tEnv.get(t.name);
-		if (ty == null){
+		if (ty == null) {
 			env.error.error(t.pos, "NameTy: type not defined");
-			return new INT();
+			return new NONE();
 		}
 		return ty;
 	}
@@ -451,21 +472,28 @@ public class Semant {
 
 	// RecordTy
 	Type transTy(RecordTy t) {
-		RECORD result = null;
+		RECORD result = null, temp = result;
 		if (t.fields == null)
-			return new RECORD(null, new VOID(), null);
+			return result;
 		else {
 			FieldList flist = t.fields;
-			for (; flist != null; flist = flist.tail) {
-				Type ty = (Type) env.tEnv.get(flist.typ);
-				if (ty == null) {
-					env.error.error(flist.pos, "RecordTy: ["+ flist.name +"] type not defined");
-					break;
-				} else {
-					if (result == null)
-						result = new RECORD(flist.name, ty, null);
-					else
-						result.tail = new RECORD(flist.name, ty, null);
+			Type ty = (Type) env.tEnv.get(flist.typ);
+			if (ty == null) {
+				env.error.error(flist.pos, "RecordTy: [" + flist.typ
+						+ "] type not defined");
+			} else {
+				result = new RECORD(flist.name, ty, null);
+				temp = result;
+				for (flist = t.fields.tail; flist != null; flist = flist.tail) {
+					ty = (Type) env.tEnv.get(flist.typ);
+					if (ty == null) {
+						env.error.error(flist.pos, "RecordTy: [" + flist.typ
+								+ "] type not defined");
+						break;
+					} else {
+						temp.tail = new RECORD(flist.name, ty, null);
+						temp = temp.tail;
+					}
 				}
 			}
 			return result;
@@ -480,88 +508,91 @@ public class Semant {
 	 */
 
 	// VarDec
-	Translate.Exp transDec(VarDec d){
-		if(null == d.init)
+	Translate.Exp transDec(VarDec d) {
+		if (null == d.init)
 			env.error.error(d.pos, "VarDec: variable not initialized");
-		else{
+		else {
 			Type typ_ty = new NONE();
 			ExpTy init_ty = transExp(d.init);
-			if(d.typ == null ){
-				if(init_ty.ty.actual() instanceof NIL)
-					env.error.error(d.pos, "cannot initialize a variable with NIL");
+			if (d.typ == null) {
+				if (init_ty.ty.actual() instanceof NIL)
+					env.error.error(d.pos,
+							"cannot initialize a variable with NIL");
 				else
 					typ_ty = init_ty.ty.actual();
-			}else{
-			typ_ty = transTy(d.typ);
-			if(!typ_ty.actual().coerceTo(init_ty.ty))
-				env.error.error(d.pos,"VarDec: type not match");
+			} else {
+				typ_ty = transTy(d.typ);
+				if (!equalTy(typ_ty.actual(),init_ty.ty.actual())){
+					env.error.error(d.pos, "VarDec: type not match");}
 			}
 			env.vEnv.put(d.name, new VarEntry(typ_ty));
-			}
+		}
 		return null;
 	}
 
-	//TypeDec
-	Translate.Exp transDec(TypeDec d){
+	// TypeDec
+	Translate.Exp transDec(TypeDec d) {
 		HashSet<Symbol.Symbol> set = new HashSet<Symbol.Symbol>();
 		TypeDec temp = d;
-		
-		for(; d!=null; d=d.next){
-			if(set.contains(d.name))
+
+		for (; d != null; d = d.next) {
+			if (set.contains(d.name))
 				env.error.error(d.pos, "TypeDec: type redefined");
 			set.add(d.name);
 			env.tEnv.put(d.name, new NAME(d.name));
 		}
-		
-		for(d = temp; d != null; d = d.next){
-			((NAME)env.tEnv.get(d.name)).bind(transTy(d.ty));}
-		
-		for(d = temp; d != null; d = d.next){
-			NAME name_entry = (NAME)env.tEnv.get(d.name);
-			if(name_entry.isLoop()){
+
+		for (d = temp; d != null; d = d.next) {
+			((NAME) env.tEnv.get(d.name)).bind(transTy(d.ty));
+		}
+
+		for (d = temp; d != null; d = d.next) {
+			NAME name_entry = (NAME) env.tEnv.get(d.name);
+			if (name_entry.isLoop()) {
 				env.error.error(d.pos, "TypeDec: cylic declaration found");
 				name_entry.bind(new INT());
 			}
 		}
 		return null;
 	}
-	
-	//FunctionDec
-	Translate.Exp transDec(FunctionDec d){
+
+	// FunctionDec
+	Translate.Exp transDec(FunctionDec d) {
 		HashSet<Symbol.Symbol> set = new HashSet<Symbol.Symbol>();
 		FunctionDec temp = d;
 
-		for(; d != null; d = d.next){
-			if(set.contains(d.name))
+		for (; d != null; d = d.next) {
+			if (set.contains(d.name))
 				env.error.error(d.pos, "FunctionDec: function name redefined");
 			set.add(d.name);
-			
-			RECORD para_ty = (RECORD)transTy(new RecordTy(d.pos, d.params));
-			
-			Type result_ty = new NONE();
-			if(d.result != null)
+
+			RECORD para_ty = (RECORD) transTy(new RecordTy(d.pos, d.params));
+
+			Type result_ty = new VOID();
+			if (d.result != null)
 				result_ty = transTy(d.result);
 			env.vEnv.put(d.name, new FuncEntry(para_ty, result_ty));
 		}
-	
-		for(d = temp; d!=null; d = d.next){
+
+		for (d = temp; d != null; d = d.next) {
 			env.vEnv.beginScope();
 			int loopMark_temp = loopMark;
 			loopMark = 0;
-			
-			if(env.vEnv.get(d.name)instanceof FuncEntry){
-				for(FieldList flist = d.params; flist!=null; flist = flist.tail){
-					Type ty = (Type)env.tEnv.get(flist.typ);
-					if(ty == null)
+
+			if (env.vEnv.get(d.name) instanceof FuncEntry) {
+				for (FieldList flist = d.params; flist != null; flist = flist.tail) {
+					Type ty = (Type) env.tEnv.get(flist.typ);
+					if (ty == null)
 						env.error.error(flist.pos, "type undefined");
 					else
 						env.vEnv.put(flist.name, new VarEntry(ty));
 				}
 				ExpTy body_ty = transExp(d.body);
-				if(!body_ty.ty.actual().coerceTo(((FuncEntry)env.vEnv.get(d.name)).result)
+				if (!body_ty.ty.actual().coerceTo(
+						((FuncEntry) env.vEnv.get(d.name)).result)
 						&& !(body_ty.ty.actual() instanceof NONE)
-						&&!(((FuncEntry)env.vEnv.get(d.name)).result.actual() instanceof NONE))
-					env.error.error(d.pos, "type not matched");
+						&& !(((FuncEntry) env.vEnv.get(d.name)).result.actual() instanceof NONE))
+					env.error.error(d.pos, "FunctionDec: type not matched");
 				loopMark = loopMark_temp;
 				env.vEnv.endScope();
 			}

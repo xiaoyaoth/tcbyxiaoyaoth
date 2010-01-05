@@ -33,9 +33,21 @@ FieldVar:
 
 检测时没有解决的
 test12; test16; test3(运行似乎进入死循环)
-test21（和test4类似，唯一的不同是test21不知道返回什么值）
+test21（和test4类似，唯一的不同是test21不知道返回什么值,引入NONE类型）
 检测时解决的问题：
-test18（不慎把ExpTy body = transExp(d.body)放入循环，导致判断函数是否存在时判断了两次）；
-test19(返回的entry为null的话，取不到ty值，这是应随便返回个什么，我返回的是void，学长返回的是int，最好都改成int，这样的话callexp得时候会发生类型不匹配，这应该是正确的)；
+test18
+（不慎把ExpTy body = transExp(d.body)放入循环，导致判断函数是否存在时判断了两次）；
+test19
+(返回的entry为null的话，取不到ty值，这是应随便返回个什么，我返回的是void，学长返回的是int，最好都改成int，这样的话callexp得时候会发生类型不匹配，这应该是正确的)；
+test40 
+学长说有错；
+test42 
+检查recordty的时候费了很大劲，最后还是用的学长的方法；还有subscript那个地方var_ty.ty改成var_ty.ty.actual();
+test44 
+transDec(VarDec d)时检测能否把右赋给左用equalty而不是简单判断二者是不是一样，因为nil可以赋给record;
 
-		
+merge:
+env初始化时把beginscope()和endscope()去掉了；
+会出现参量个数不匹配的情况，把RecordTy中result的默认值设为null(而不是new RECORD(...)，因为这样会CallExp检查参数个数时被认为有一个参量)；
+同时标准库函数无参量的函数formals设为null, 而不是new RECORD(null, new VOID(), null);
+	
