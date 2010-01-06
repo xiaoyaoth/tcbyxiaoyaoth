@@ -10,36 +10,35 @@ abstract class Entry {
 
 class VarEntry extends Entry {
 	Types.Type ty;
-	VarEntry(Types.Type t){
+	Translate.Access acc;
+	VarEntry(Translate.Access a, Types.Type t){
+		acc = a;
 		ty = t;
 	}
 }
 
 class LoopVarEntry extends VarEntry{
-	LoopVarEntry( Types.Type t){
-		super(new Types.INT());
-		//access = a;
-		ty = new Types.INT();
-	}
-	
+	LoopVarEntry(Translate.Access a, Types.Type t){
+		super(a, new Types.INT());
+	}	
 }
 
 class FuncEntry extends Entry {
 	Types.RECORD formals;
 	Types.Type result;
-	//Temp.Label label;
-	//Translate.Level level;
-	public FuncEntry(Types.RECORD f, Types.Type r){
+	Temp.Label label;
+	Translate.Level level;
+	public FuncEntry(Translate.Level lv, Temp.Label lb, Types.RECORD f, Types.Type r){
 		formals = f;
 		result = r;
-		//label = l;
-		//level = le;
+		label = lb;
+		level = lv;
 	}
 }
 
 class StdFuncEntry extends FuncEntry{
-	public StdFuncEntry(RECORD f, Type r) {
-		super(f, r);
+	public StdFuncEntry(Translate.Level lv, Temp.Label lb, RECORD f, Type r) {
+		super(lv, lb, f, r);
 		// TODO Auto-generated constructor stub
 	}	
 }
