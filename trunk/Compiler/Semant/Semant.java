@@ -3,6 +3,10 @@ package Semant;
 import java.util.HashSet;
 
 import Absyn.*;
+import Frame.Frame;
+import Mips.MipsFrame;
+import Temp.Label;
+import Translate.Level;
 import Types.INT;
 import Types.NIL;
 import Types.NONE;
@@ -18,13 +22,17 @@ public class Semant {
 	public boolean errorFlag = false;
 	Env env;
 	int loopMark;
+	
+	Level current_lv;
+	//Label current_lb;
 
-	public Semant(ErrorMsg.ErrorMsg err) {
-		this(new Env(err));
+	public Semant(ErrorMsg.ErrorMsg err) {		
+		this(new Env(err, new Level(new MipsFrame(new Label("main")))));
 	}
 
 	Semant(Env e) {
 		env = e;
+		current_lv = e.root;
 	}
 
 	/*
@@ -250,8 +258,9 @@ public class Semant {
 
 		checkInt(low, e.var.init.pos);
 		checkInt(high, e.hi.pos);
+		Translate.Access acc = current_lv.allocLocal(e.var.escape);
 		env.vEnv.beginScope();
-		env.vEnv.put(e.var.name, new LoopVarEntry(new INT()));
+		env.vEnv.put(e.var.name, new LoopVarEntry(acc, new INT()));
 		transExp(e.body);
 		env.vEnv.endScope();
 
@@ -525,7 +534,8 @@ public class Semant {
 				if (!equalTy(typ_ty.actual(),init_ty.ty.actual())){
 					env.error.error(d.pos, "VarDec: type not match");}
 			}
-			env.vEnv.put(d.name, new VarEntry(typ_ty));
+			Translate.Access acc = current_lv.allocLocal(d.escape);
+			env.vEnv.put(d.name, new VarEntry(acc, typ_ty));
 		}
 		return null;
 	}
@@ -565,13 +575,14 @@ public class Semant {
 			if (set.contains(d.name))
 				env.error.error(d.pos, "FunctionDec: function name redefined");
 			set.add(d.name);
-
 			RECORD para_ty = (RECORD) transTy(new RecordTy(d.pos, d.params));
 
 			Type result_ty = new VOID();
 			if (d.result != null)
 				result_ty = transTy(d.result);
-			env.vEnv.put(d.name, new FuncEntry(para_ty, result_ty));
+			Level level = new Level(current_lv, d.name, makeBoolList(d.params));
+			System.out.println(d.name + " current_lv: "+current_lv.frame.name);
+			env.vEnv.put(d.name, new FuncEntry(level, new Label(d.name), para_ty, result_ty));
 		}
 
 		for (d = temp; d != null; d = d.next) {
@@ -580,12 +591,19 @@ public class Semant {
 			loopMark = 0;
 
 			if (env.vEnv.get(d.name) instanceof FuncEntry) {
-				for (FieldList flist = d.params; flist != null; flist = flist.tail) {
+				Level temp_lv = current_lv;
+				current_lv = ((FuncEntry)env.vEnv.get(d.name)).level;
+				Translate.AccessList acclist = current_lv.formals.tail; 
+				//建level时，formals第一项默认为true，是给static_link留下一个寄存器，所以进行变量检查的时候就要从formals.tail开始；
+				//Translate.AccessList acclist = current_lv.formals;
+				
+				for (FieldList flist = d.params; flist != null; flist = flist.tail, acclist = acclist.tail) {
 					Type ty = (Type) env.tEnv.get(flist.typ);
 					if (ty == null)
 						env.error.error(flist.pos, "type undefined");
-					else
-						env.vEnv.put(flist.name, new VarEntry(ty));
+					else{
+						Translate.Access acc = new Translate.Access(current_lv, acclist.head.access);
+						env.vEnv.put(flist.name, new VarEntry(acc, ty));}
 				}
 				ExpTy body_ty = transExp(d.body);
 				if (!body_ty.ty.actual().coerceTo(
@@ -593,9 +611,10 @@ public class Semant {
 						&& !(body_ty.ty.actual() instanceof NONE)
 						&& !(((FuncEntry) env.vEnv.get(d.name)).result.actual() instanceof NONE))
 					env.error.error(d.pos, "FunctionDec: type not matched");
-				loopMark = loopMark_temp;
-				env.vEnv.endScope();
+				current_lv = temp_lv;
 			}
+			loopMark = loopMark_temp;
+			env.vEnv.endScope();
 		}
 		return null;
 	}

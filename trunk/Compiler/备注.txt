@@ -1,8 +1,8 @@
-
+类型检查：
 Translate:
 Level：(Translate.)AccessList,(Translate.)Access,Frame.AccessList Frame.Frame
 AccessList: (Translate.)Access;
-Access:(Translate.)Level,Frame.Access
+Access:(Translate.)Level,Frame.Access//做Frame时再看，这里的Access和AccessList都是Frame里的；
 
 Frame:
 AccessList
@@ -50,4 +50,22 @@ merge:
 env初始化时把beginscope()和endscope()去掉了；
 会出现参量个数不匹配的情况，把RecordTy中result的默认值设为null(而不是new RECORD(...)，因为这样会CallExp检查参数个数时被认为有一个参量)；
 同时标准库函数无参量的函数formals设为null, 而不是new RECORD(null, new VOID(), null);
-	
+
+活动记录：
+堆栈是一块保存数据的连续内存。 一个名为堆栈指针(SP)的寄存器指向堆栈的顶部。 堆栈的底部在一个固定的地址。 堆栈的大小在运行时由内核动态地调整。 CPU实现指令 PUSH和POP， 向堆栈中添加元素和从中移去元素。 堆栈由逻辑堆栈帧组成。 当调用函数时逻辑堆栈帧被压入栈中， 当函数返回时逻辑 堆栈帧被从栈中弹出。 堆栈帧包括函数的参数， 函数地局部变量， 以及恢复前一个堆栈 帧所需要的数据， 其中包括在函数调用时指令指针(IP)的值。 堆栈既可以向下增长(向内存低地址)也可以向上增长， 这依赖于具体的实现。 在我 们的例子中， 堆栈是向下增长的。 这是很多计算机的实现方式， 包括Intel， Motorola， SPARC和MIPS处理器。 堆栈指针(SP)也是依赖于具体实现的。 它可以指向堆栈的最后地址， 或者指向堆栈之后的下一个空闲可用地址。 在我们的讨论当中， SP指向堆栈的最后地址。 除了堆栈指针(SP指向堆栈顶部的的低地址)之外， 为了使用方便还有指向帧内固定 地址的指针叫做帧指针(FP)。 有些文章把它叫做局部基指针(LB-local base pointer)。 从理论上来说， 局部变量可以用SP加偏移量来引用。 然而， 当有字被压栈和出栈后， 这 些偏移量就变了。 尽管在某些情况下编译器能够跟踪栈中的字操作， 由此可以修正偏移 量， 但是在某些情况下不能。 而且在所有情况下， 要引入可观的管理开销。 而且在有些 机器上， 比如Intel处理器， 由SP加偏移量访问一个变量需要多条指令才能实现。 因此， 许多编译器使用第二个寄存器， FP， 对于局部变量和函数参数都可以引用， 因为它们到FP的距离不会受到PUSH和POP操作的影响。 在Intel CPU中， BP(EBP)用于这 个目的。 在Motorola CPU中， 除了A7(堆栈指针SP)之外的任何地址寄存器都可以做FP。 考虑到我们堆栈的增长方向， 从FP的位置开始计算， 函数参数的偏移量是正值， 而局部 变量的偏移量是负值。 当一个例程被调用时所必须做的第一件事是保存前一个FP(这样当例程退出时就可以 恢复)。 然后它把SP复制到FP， 创建新的FP， 把SP向前移动为局部变量保留空间。 这称为 例程的序幕(prolog)工作。 当例程退出时， 堆栈必须被清除干净， 这称为例程的收尾 (epilog)工作。 Intel的ENTER和LEAVE指令， Motorola的LINK和UNLINK指令， 都可以用于 有效地序幕和收尾工作。 
+
+Caller-save, Callee-save, (活动记录P6)
+Caller-save:有个变量x，当f结束后，没有人调用他，就把他放到caller-save寄存器里，并且f调用g时不保存x.
+Callee-save：有个Local变量i; f结束后仍要使用，则把他放到callee-save中。
+
+写此部分时用到的后面的东西：
+InFrame:用到Tree里的东西（Expr， MEM， BINOP）；
+
+写此部分填充前面的部分的东西：
+Entry：
+	VarEntry添加access信息，FuncEntry添加Level，Label信息。
+Semant：
+	添加了current_lv，用于构造entry,其中学长的程序里有很多关于level的temp没看懂，比如functionDec。需要运行MipsFrame输出一下每个阶段的level信息，就知道Level是干啥用的了。按学长的意思不能把当前的Level直接用，要保存一下。
+	FunctionDec:
+		endscope和loopmark的位置在上一个阶段放错了，放到for循环里了，但是貌似对类型检查没有影响？不知道，总之移出来了
+		建level时，formals第一项默认为true，是给static_link留下一个寄存器，所以进行变量检查的时候就要从formals.tail开始；(我是指给每个entry分配access时)；
