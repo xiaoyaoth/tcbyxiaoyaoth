@@ -3,22 +3,14 @@ package Mips;
 import java.util.ArrayList;
 
 import Assem.InstrList;
-import Frame.Access;
-import Frame.AccessList;
-import Frame.Frame;
-import Temp.Label;
-import Temp.Temp;
-import Temp.TempList;
-import Tree.MOVE;
-import Tree.Stm;
-import Tree.TEMP;
+import Frame.*;
+import Temp.*;
+import Tree.*;
 import Util.BoolList;
 
 public class MipsFrame extends Frame{
 	int allocDown;
 	private int wordSize = 4;
-	//private int AmtOfCalleeSaves = 8;
-	//private int AmtOfCallerSaves = 10;
 	
 	ArrayList<MOVE> saveArgs = new ArrayList<MOVE>();
 	
@@ -76,7 +68,7 @@ public class MipsFrame extends Frame{
 	}
 	
 	public Stm procEntryExit1(Stm body) {
-		return null;
+		return body;
 	}
 	
 	public InstrList procEntryExit2(InstrList body) {
@@ -116,5 +108,11 @@ public class MipsFrame extends Frame{
 		for(int i = 0; i<10; i++) if(t == callerSaves[i]) {s = "$t" + i; break;}
 		if(s.equals(""))return null;
 		return s;
+	}
+
+	@Override
+	public Expr externalCall(String funcName, ExpList args) {
+		// TODO Auto-generated method stub
+		return new CALL(new NAME(new Label(funcName)), args);
 	}
 }

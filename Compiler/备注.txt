@@ -12,6 +12,10 @@ Tree:
 把Exp改成Expr，因为有一个EXP，windows不区分大小写，认为重名
 
 Sement:
+所有的type, variable都分别保存在各自的hashtable中，这是否意味着不能重名呢？binder是起到scope的作用的。
+
+TypeDec中有个hashset，他能检测的是和他相邻的typedec有没有重名，和他不相邻的typedec认为是在别的情况被调用，这时又回新建一个set，如果与前面的type重名，这时后一个会覆盖前一个。
+这样做的原因是因为tiger里面不允许mutual recursive的typedec，但是中间插入一点东西，在定义相同名字的type是允许的，认为后一个定义把前一定义覆盖。（可以通过打印set验证）
 CallExp: 
 CallExp.args记录了实参,要与形参相比较；
 形参的获得方法是通过在env.vEnv中招CallExp.func, 返回的funcEntry中formals记录了形参的类型。

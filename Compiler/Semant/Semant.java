@@ -242,7 +242,7 @@ public class Semant {
 			env.error.error(argr.head.pos,
 					"CallExp:more arguments than declared");
 		if (argf != null){
-			System.out.println(argf.fieldName);
+			//System.out.println(argf.fieldName);
 			env.error.error(e.pos, "CallExp:lesser arguments than declared");}
 
 		Type resultTy = ((FuncEntry) env.vEnv.get(e.func)).result;
@@ -544,14 +544,14 @@ public class Semant {
 	Translate.Exp transDec(TypeDec d) {
 		HashSet<Symbol.Symbol> set = new HashSet<Symbol.Symbol>();
 		TypeDec temp = d;
-
+		
 		for (; d != null; d = d.next) {
 			if (set.contains(d.name))
 				env.error.error(d.pos, "TypeDec: type redefined");
 			set.add(d.name);
 			env.tEnv.put(d.name, new NAME(d.name));
 		}
-
+		
 		for (d = temp; d != null; d = d.next) {
 			((NAME) env.tEnv.get(d.name)).bind(transTy(d.ty));
 		}
@@ -581,7 +581,7 @@ public class Semant {
 			if (d.result != null)
 				result_ty = transTy(d.result);
 			Level level = new Level(current_lv, d.name, makeBoolList(d.params));
-			System.out.println(d.name + " current_lv: "+current_lv.frame.name);
+			//System.out.println(d.name + " current_lv: "+current_lv.frame.name);
 			env.vEnv.put(d.name, new FuncEntry(level, new Label(d.name), para_ty, result_ty));
 		}
 
