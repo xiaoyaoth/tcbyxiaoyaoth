@@ -15,6 +15,7 @@ public abstract class Frame implements TempMap{
 	public abstract Temp RA();
 	public abstract Temp RV();
 	public abstract TempList registers();
+	public abstract Expr externalCall(String funcName, ExpList args);
 	public abstract Stm procEntryExit1(Stm body);
 	public abstract InstrList procEntryExit2(InstrList body);
 	public abstract InstrList procEntryExit3(InstrList body);
