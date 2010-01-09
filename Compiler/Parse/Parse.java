@@ -6,7 +6,8 @@ import Translate.Level;
 public class Parse {
 
 	public ErrorMsg.ErrorMsg errorMsg;
-	public Absyn.Print print = new Absyn.Print(System.out);
+	public Absyn.Print printAbsyn = new Absyn.Print(System.out);
+	public Tree.Print printIR = new Tree.Print(System.out);
 
 	public Parse(String filename) {
 		errorMsg = new ErrorMsg.ErrorMsg(filename);
@@ -18,12 +19,13 @@ public class Parse {
 		}
 		parser parser = new parser(new Yylex(inp, errorMsg), errorMsg);
 		Semant s = new Semant(errorMsg);
-		// parser parser = new parser(new Yylex(System.in,errorMsg), errorMsg);
 
 		try {
 			parser./* debug_ */parse();
-			// print.prExp(parser.parseResult, 0);
-			// System.out.println();
+			//System.out.println("****** Abstract Syntax Tree ******");
+			//printAbsyn.prExp(parser.parseResult, 0);
+			//System.out.println();
+			
 			s.transProg(parser.parseResult);
 			//System.out.println(errorMsg.anyErrors);
 			if (errorMsg.anyErrors == false) {
@@ -32,9 +34,7 @@ public class Parse {
 				System.out.println(filename + " error(s) dectected");
 			System.out.println();
 		} catch (Throwable e) {
-			System.out.println("error at " + filename);
-			print.prExp(parser.parseResult, 0);
-			System.out.println();
+			System.out.println(filename + " errors");
 			e.printStackTrace();
 			throw new Error(e.toString());
 		} finally {

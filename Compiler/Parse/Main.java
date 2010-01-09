@@ -5,7 +5,7 @@ public class Main {
 	public static void main(String argv[]) {
 		// String filename = argv[0];
 		String filename = "F:\\我的文件夹\\课件和作业\\编译课程设计\\TigerBook\\sources\\testcases\\";
-		mode1(filename);
+		mode2(filename);
 	}
 
 	public static void mode1(String fname) {
@@ -18,8 +18,8 @@ public class Main {
 	}
 	
 	public static void mode2(String fname){
-		//String temp = fname + "test" + 44 + ".tig";
-		String temp = fname +"merge.tig";
+		String temp = fname + "test" + 17 + ".tig";
+		//String temp = fname +"merge.tig";
 		new Parse(temp);
 	}
 }

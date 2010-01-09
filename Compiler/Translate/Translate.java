@@ -31,43 +31,66 @@ public class Translate {
 		frags = frag;
 	}
 	
+	//返回expr供semant打印
+	public Tree.Expr exprResult(Exp e){
+		return e.unEx();
+	}
 	
-	Exp transIntExp(int value){
+	//返回stm供semant打印
+	public Tree.Stm stmResult(Exp e){
+		return e.unNx();
+	}
+	
+	//为了让类型检查和翻译中间树能兼容，返回一个没有值的东西，保证翻译中间树能继续。这样比直接返回null好。
+	public Nx nothingResult(){
+		return new Nx(null);
+	}
+	
+	/*
+	 * tool-function ends;
+	 */
+	/*
+	 * trans begin
+	 */
+	public Exp transIntExp(int value){
 		return new Ex(new CONST(value));
 	}
 	
-	Exp transStringExp(String value){
+	public Exp transStringExp(String value){
 		Label l = new Label();
 		addFrag (new DataFrag(l, frame.string(l, value)));
 		return new Ex(new NAME(l));
 	}
 	
-	Exp transNilExp(){
+	public Exp transNilExp(){
 		return new Ex(new CONST(0));
 	}
 	
-	Exp transVarExp(Exp e){
+	public Exp transVarExp(Exp e){
 		return e;
 	}
 	
-	Exp transCalcExp(int oper, Exp left, Exp right){
+	public Exp transCalcExp(int oper, Exp left, Exp right){
 		return new Ex(new BINOP(oper, left.unEx(), right.unEx()));
 	}
 	
-	Exp transStringRelExp(int oper, Exp left, Exp right){
+	public Exp transStringRelExp(int oper, Exp left, Exp right){
 		Expr compare  = home.frame.externalCall("stringEqual", new ExpList(left.unEx(), new ExpList(right.unEx(), null)));
 		return new RelCx(oper, new Ex(compare), new Ex(new CONST(0)));
 	}
 	
-	Exp transOtherRelExp(int oper, Exp left, Exp right){
+	public Exp transOtherRelExp(int oper, Exp left, Exp right){
 		return new RelCx(oper, left, right);
 	}
 	
-	Exp transAssignExp(Exp lvalue, Exp exp){
-		return new Nx(new MOVE(lvalue.unEx(), exp.unEx()));
+	public Exp transAssignExp(Exp lvalue, Exp exp){
+		if(lvalue!=null&&exp!=null)
+			return new Nx(new MOVE(lvalue.unEx(), exp.unEx()));
+		else
+			return new Nx(null);
 	}
 	
-	Exp transCallExp(Level home, Level dest, Label name, ArrayList<Exp> argValue){
+	public Exp transCallExp(Level home, Level dest, Label name, ArrayList<Exp> argValue){
 		ExpList args = null;
 		for(int i = argValue.size()-1; i>=0; --i)
 			args = new ExpList(argValue.get(i).unEx(),args);
@@ -81,30 +104,34 @@ public class Translate {
 		return new Ex(new CALL(new NAME(name), args));
 	}
 	
-	Exp transExtCallExp(Level home, Label name, ArrayList<Exp> argValue){
+	public Exp transExtCallExp(Level home, Label name, ArrayList<Exp> argValue){
 		ExpList args = null;
 		for(int i = argValue.size()-1; i>=0; --i)
 			args = new ExpList(argValue.get(i).unEx(), args);
 		return new Ex(home.frame.externalCall(name.toString(), args));
 	}
 	
-	Exp combine2Stm(Exp e1, Exp e2){
-		if(e1 == null)
-			return new Nx(e2.unNx());
+	public Exp combine2Stm(Exp e1, Exp e2){
+		if(e1 == null){
+			if(e2 == null)
+				return null;
+			return new Nx(e2.unNx());}
 		else if (e2 == null)
 			return new Nx(e1.unNx());
 		else
 			return new Nx(new SEQ(e1.unNx(), e2.unNx()));
 	}
 	
-	Exp combine2Exp(Exp e1, Exp e2){
-		if(e1 == null)
-			return new Ex(e2.unEx());
+	public Exp combine2Exp(Exp e1, Exp e2){
+		if(e2 == null)
+			throw new Error("Combin2Exp:the second can't be null");
+		if(e1 == null){
+			return new Ex(e2.unEx());}
 		else
 			return new Ex(new ESEQ(e1.unNx(), e2.unEx()));	
 	}
 	
-	Exp transRecordExp(Level home, ArrayList<Exp> field){
+	public Exp transRecordExp(Level home, ArrayList<Exp> field){
 		Temp addr = new Temp();
 		int size = 0;
 		if(field.size() != 0)
@@ -120,24 +147,24 @@ public class Translate {
 		return new Ex(new ESEQ(new SEQ(new MOVE(new TEMP(addr), alloc), init),new TEMP(addr)));
 	}
 	
-	Exp transArrayExp(Level home, Exp init, Exp size){
+	public Exp transArrayExp(Level home, Exp init, Exp size){
 		Expr alloc = home.frame.externalCall("initArray", new ExpList(size.unEx(), new ExpList(init.unEx(),null)));
 		return new Ex(alloc);
 	}
 	
-	Exp transIfExp(Exp test, Exp e1, Exp e2){
+	public Exp transIfExp(Exp test, Exp e1, Exp e2){
 		return new IfExp(test, e1, e2);
 	}
 	
-	Exp transWhileExp(Exp test, Exp body, Label done){
+	public Exp transWhileExp(Exp test, Exp body, Label done){
 		return new WhileExp(test, body, done);
 	}
 	
-	Exp transForExp(Level home, Access var, Exp low, Exp high, Exp body, Label done){
+	public Exp transForExp(Level home, Access var, Exp low, Exp high, Exp body, Label done){
 		return new ForExp(home, var, low, high, body, done);
 	}
 	
-	Exp transBreakExp(Label peekLabel){
+	public Exp transBreakExp(Label peekLabel){
 		return new Nx(new JUMP(peekLabel));
 	}
 	//指导书上的做法是建立一个Label的堆栈，然后通过压入Label和获取Label的方法取得最顶的Label；
@@ -156,7 +183,7 @@ public class Translate {
 	 * 
 	 * 以及Exp和Expr的关系
 	 */
-	Exp transSimpleVar(Access acc, Level home){
+	public Exp transSimpleVar(Access acc, Level home){
 		Expr result = new TEMP(home.frame.FP());
 		Level lv = home;
 		while(lv != acc.home){
@@ -166,13 +193,13 @@ public class Translate {
 		return new Ex(acc.access.exp(result));
 	}
 	
-	Exp transSubscriptVar(Exp var, Exp index){
+	public Exp transSubscriptVar(Exp var, Exp index){
 		Expr array_addr = var.unEx();//var可以理解为也是数组的首地址；
 		Expr array_offset = new BINOP(BINOP.MUL, index.unEx(), new CONST(wordSize));
 		return new Ex(new MEM(new BINOP(BINOP.PLUS, array_addr, array_offset)));
 	}
 	
-	Exp transFieldVar(Exp var, int num){
+	public Exp transFieldVar(Exp var, int num){
 		Expr record_addr = var.unEx();
 		Expr record_offset = new CONST(num*wordSize);
 		return new Ex(new MEM(new BINOP(BINOP.PLUS, record_addr, record_offset)));
