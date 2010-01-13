@@ -1,7 +1,6 @@
 package Parse;
 
 import Semant.Semant;
-import Translate.Level;
 
 public class Parse {
 
@@ -22,9 +21,10 @@ public class Parse {
 
 		try {
 			parser./* debug_ */parse();
-			//System.out.println("****** Abstract Syntax Tree ******");
-			//printAbsyn.prExp(parser.parseResult, 0);
-			//System.out.println();
+			System.out.println("****** Abstract Syntax Tree ******");
+			printAbsyn.prExp(parser.parseResult, 0);
+			System.out.println("\n************ end ************");
+			System.out.println();
 			
 			s.transProg(parser.parseResult);
 			//System.out.println(errorMsg.anyErrors);

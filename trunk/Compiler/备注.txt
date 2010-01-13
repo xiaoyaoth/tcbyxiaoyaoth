@@ -64,6 +64,8 @@ Callee-save：有个Local变量i; f结束后仍要使用，则把他放到callee-save中。
 
 写此部分时用到的后面的东西：
 InFrame:用到Tree里的东西（Expr， MEM， BINOP）；
+MipsFrame:
+newFrame里有个argReg的templist,不知道是干什么用的。
 
 写此部分填充前面的部分的东西：
 Entry：
@@ -73,3 +75,4 @@ Semant：
 	FunctionDec:
 		endscope和loopmark的位置在上一个阶段放错了，放到for循环里了，但是貌似对类型检查没有影响？不知道，总之移出来了
 		建level时，formals第一项默认为true，是给static_link留下一个寄存器，所以进行变量检查的时候就要从formals.tail开始；(我是指给每个entry分配access时)；
+		
