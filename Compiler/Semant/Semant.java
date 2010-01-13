@@ -26,6 +26,7 @@ public class Semant {
 	Semant(Env e) {
 		env = e;
 		current_lv = e.root;
+		current_lb = e.root.frame.name;
 	}
 
 	/*
@@ -66,15 +67,16 @@ public class Semant {
 	public void transProg(Exp exp) {
 		ExpTy result = transExp(exp);
 		errorFlag = env.error.anyErrors;
+		if(errorFlag)
+			return;
+		//System.out.println(result.exp.getClass());
+		boolean returnValue = !(result.ty.actual() instanceof Types.VOID || result.ty == null);
+		trans.procEntryExit(current_lv, result.exp, returnValue);
 		
-		System.out.println(result.exp.getClass());
+		Translate.Frag frags = trans.getResult();
 		Tree.Print printer = new Tree.Print(System.out);
-		if(result.exp instanceof Translate.Ex){
-			System.out.println("******* Ex IR tree *******");
-			printer.prExp(trans.exprResult(result.exp));}
-		else{
-			System.out.println("******* Nx IR tree *******");
-			printer.prStm(trans.stmResult(result.exp));}
+		System.out.println("******* IR tree *******");
+		printer.prStm(trans.stmResult((Translate.ProcFrag)frags));
 		System.out.println("********** end **********");
 	}
 
@@ -250,7 +252,6 @@ public class Semant {
 			env.error.error(argr.head.pos,
 					"CallExp:more arguments than declared");
 		if (argf != null) {
-			// System.out.println(argf.fieldName);
 			env.error.error(e.pos, "CallExp:lesser arguments than declared");
 		}
 
@@ -270,7 +271,7 @@ public class Semant {
 
 	// ForExp
 	ExpTy transExp(ForExp e) {
-		System.out.println(current_lb);
+		System.out.println("current label:"+current_lb);
 		loopMark++;
 		Label temp_lb = current_lb;
 		current_lb = new Label();
@@ -417,7 +418,7 @@ public class Semant {
 
 	// WhileExp
 	ExpTy transExp(WhileExp e) {
-		System.out.println(current_lb);
+		System.out.println("current label:"+current_lb);
 		loopMark++;
 		Label temp_lb = current_lb;
 		current_lb = new Label();
@@ -648,8 +649,6 @@ public class Semant {
 			if (d.result != null)
 				result_ty = transTy(d.result);
 			Level level = new Level(current_lv, d.name, makeBoolList(d.params));
-			// System.out.println(d.name +
-			// " current_lv: "+current_lv.frame.name);
 			env.vEnv.put(d.name, new FuncEntry(level, new Label(d.name),
 					para_ty, result_ty));
 		}

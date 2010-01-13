@@ -18,8 +18,8 @@ public class Main {
 	}
 	
 	public static void mode2(String fname){
-		String temp = fname + "test" + 17 + ".tig";
-		//String temp = fname +"merge.tig";
+		//String temp = fname + "test" + 17 + ".tig";
+		String temp = fname +"queens.tig";
 		new Parse(temp);
 	}
 }

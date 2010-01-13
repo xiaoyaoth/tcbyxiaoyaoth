@@ -31,14 +31,9 @@ public class Translate {
 		frags = frag;
 	}
 	
-	//返回expr供semant打印
-	public Tree.Expr exprResult(Exp e){
-		return e.unEx();
-	}
-	
 	//返回stm供semant打印
-	public Tree.Stm stmResult(Exp e){
-		return e.unNx();
+	public Tree.Stm stmResult(ProcFrag f){
+		return f.body;
 	}
 	
 	//为了让类型检查和翻译中间树能兼容，返回一个没有值的东西，保证翻译中间树能继续。这样比直接返回null好。
@@ -91,6 +86,8 @@ public class Translate {
 	}
 	
 	public Exp transCallExp(Level home, Level dest, Label name, ArrayList<Exp> argValue){
+		System.out.print("transCallExp: home:"+home.frame.name+" dest:"+dest.frame.name);
+		System.out.println(" label:"+name);
 		ExpList args = null;
 		for(int i = argValue.size()-1; i>=0; --i)
 			args = new ExpList(argValue.get(i).unEx(),args);
@@ -105,6 +102,8 @@ public class Translate {
 	}
 	
 	public Exp transExtCallExp(Level home, Label name, ArrayList<Exp> argValue){
+		System.out.print("transExtCallExp: home:"+home.frame.name);
+		System.out.println(" label:"+name);
 		ExpList args = null;
 		for(int i = argValue.size()-1; i>=0; --i)
 			args = new ExpList(argValue.get(i).unEx(), args);
@@ -161,6 +160,7 @@ public class Translate {
 	}
 	
 	public Exp transForExp(Level home, Access var, Exp low, Exp high, Exp body, Label done){
+		System.out.println("transForExp: home:"+home.frame.name+" var:"+var.access+ " done:"+done);
 		return new ForExp(home, var, low, high, body, done);
 	}
 	
