@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<con:tc-config xmlns:con="http://www.terracotta.org/config">
+  <servers>
+    <server host="%i" name="localhost">
+      <dso-port>9510</dso-port>
+      <jmx-port>9520</jmx-port>
+      <data>terracotta/server-data</data>
+      <logs>terracotta/server-logs</logs>
+      <statistics>terracotta/cluster-statistics</statistics>
+    </server>
+  </servers>
+  <clients>
+    <logs>terracotta/client-logs</logs>
+    <statistics>terracotta/client-statistics/%D</statistics>
+  </clients>
+  <application>
+    <dso>
+      <instrumented-classes>
+        <include>
+          <class-expression>Parse.newClient</class-expression>
+        </include>
+        <include>
+          <class-expression>java.lang.Thread</class-expression>
+        </include>
+        <include>
+          <class-expression>Parse.newParse</class-expression>
+        </include>
+        <include>
+          <class-expression>Parse.newServer</class-expression>
+        </include>
+        <include>
+          <class-expression>Parse.Manager</class-expression>
+        </include>
+        <include>
+          <class-expression>Parse.Agent</class-expression>
+        </include>
+        <include>
+          <class-expression>Parse.Employee</class-expression>
+        </include>
+      </instrumented-classes>
+      <roots>
+        <root>
+          <field-name>Parse.newServer.outbox</field-name>
+        </root>
+        <root>
+          <field-name>Parse.newClient.JVM_COUNTER</field-name>
+        </root>
+        <root>
+          <field-name>Parse.newServer.conv_fini</field-name>
+        </root>
+        <root>
+          <field-name>Parse.newClient.remove</field-name>
+        </root>
+      </roots>
+      <locks>
+        <autolock auto-synchronized="false">
+          <method-expression>void Parse.newClient.__INIT__()</method-expression>
+          <lock-level>write</lock-level>
+        </autolock>
+        <autolock auto-synchronized="false">
+          <method-expression>void Parse.newClient.main(java.lang.String[])</method-expression>
+          <lock-level>write</lock-level>
+        </autolock>
+        <autolock auto-synchronized="false">
+          <method-expression>void Parse.newClient.run()</method-expression>
+          <lock-level>write</lock-level>
+        </autolock>
+        <autolock auto-synchronized="false">
+          <method-expression>void Parse.newServer.main(java.lang.String[])</method-expression>
+          <lock-level>write</lock-level>
+        </autolock>
+      </locks>
+    </dso>
+  </application>
+</con:tc-config>

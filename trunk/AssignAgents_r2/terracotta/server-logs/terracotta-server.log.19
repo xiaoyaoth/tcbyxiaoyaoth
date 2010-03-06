@@ -1,0 +1,234 @@
+2009-12-30 01:26:07,540 [main] INFO com.terracottatech.general - New logging session started.
+2009-12-30 01:26:07,555 [main] INFO com.terracottatech.console - Terracotta 3.1.0, as of 20090820-110828 (Revision 13440 by cruise@su10mo5 from 3.1)
+2009-12-30 01:26:07,602 [main] INFO com.tc.config.schema.setup.StandardXMLFileConfigurationCreator - Attempting to load configuration from the file at 'F:\我的文件夹\Workspace\AssignAgents_r2\tc-config.xml'...
+2009-12-30 01:26:07,602 [main] INFO com.tc.config.schema.setup.StandardXMLFileConfigurationCreator - Successfully loaded configuration from the file at 'F:\我的文件夹\Workspace\AssignAgents_r2\tc-config.xml'. Config is:
+
+<?xml version="1.0" encoding="UTF-8"?>
+<con:tc-config xmlns:con="http://www.terracotta.org/config">
+  <servers>
+    <server host="%i" name="localhost">
+      <dso-port>9510</dso-port>
+      <jmx-port>9520</jmx-port>
+      <data>terracotta/server-data</data>
+      <logs>terracotta/server-logs</logs>
+      <statistics>terracotta/cluster-statistics</statistics>
+    </server>
+  </servers>
+  <clients>
+    <logs>terracotta/client-logs</logs>
+    <statistics>terracotta/client-statistics/%D</statistics>
+  </clients>
+  <application>
+    <dso>
+      <instrumented-classes>
+        <include>
+          <class-expression>Parse.newClient</class-expression>
+        </include>
+        <include>
+          <class-expression>java.lang.Thread</class-expression>
+        </include>
+        <include>
+          <class-expression>Parse.newParse</class-expression>
+        </include>
+        <include>
+          <class-expression>Parse.newServer</class-expression>
+        </include>
+        <include>
+          <class-expression>Parse.Manager</class-expression>
+        </include>
+        <include>
+          <class-expression>Parse.Agent</class-expression>
+        </include>
+        <include>
+          <class-expression>Parse.Employee</class-expression>
+        </include>
+      </instrumented-classes>
+      <roots>
+        <root>
+          <field-name>Parse.newServer.outbox</field-name>
+        </root>
+        <root>
+          <field-name>Parse.newClient.JVM_COUNTER</field-name>
+        </root>
+      </roots>
+      <locks>
+        <autolock auto-synchronized="false">
+          <method-expression>void Parse.newClient.__INIT__()</method-expression>
+          <lock-level>write</lock-level>
+        </autolock>
+        <autolock auto-synchronized="false">
+          <method-expression>void Parse.newClient.main(java.lang.String[])</method-expression>
+          <lock-level>write</lock-level>
+        </autolock>
+        <autolock auto-synchronized="false">
+          <method-expression>void Parse.newClient.run()</method-expression>
+          <lock-level>write</lock-level>
+        </autolock>
+        <autolock auto-synchronized="false">
+          <method-expression>void Parse.newServer.main(java.lang.String[])</method-expression>
+          <lock-level>write</lock-level>
+        </autolock>
+      </locks>
+    </dso>
+  </application>
+</con:tc-config>
+2009-12-30 01:26:07,930 [main] INFO com.terracottatech.console - Configuration loaded from the file at 'F:\我的文件夹\Workspace\AssignAgents_r2\tc-config.xml'.
+2009-12-30 01:26:07,945 [main] INFO com.tc.properties.TCProperties - Loading default properties from tc.properties
+2009-12-30 01:26:07,945 [main] INFO com.tc.properties.TCProperties - tc-config doesn't have any tc-property. No tc-property will be overridden
+2009-12-30 01:26:07,945 [main] INFO com.tc.properties.TCProperties - Loaded TCProperties : TCProperties = { cvt.buffer.randomsuffix.enabled = false, cvt.client.fail.buffer.open = false, cvt.rest.interface.enabled = true, cvt.retriever.notification.interval = 60, cvt.statistics.logging.interval = 900, cvt.store.randomsuffix.enabled = false, ehcache.clusterAllCacheManagers = true, ehcache.concurrency = 128, ehcache.evictor.logging.enabled = false, ehcache.evictor.pool.size = 1, ehcache.global.eviction.enable = true, ehcache.global.eviction.frequency = 10, ehcache.global.eviction.rest.timeMillis = 10, ehcache.global.eviction.segments = 2, ehcache.lock.readLevel = READ, ehcache.lock.writeLevel = WRITE, ehcache.logging.enabled = false, http.defaultservlet.attribute.aliases = false;, http.defaultservlet.attribute.dirallowed = false;, http.defaultservlet.enabled = false;, l1.cachemanager.criticalObjectThreshold = -1, l1.cachemanager.criticalThreshold = 90, l1.cachemanager.enabled = true, l1.cachemanager.leastCount = 2, l1.cachemanager.logging.enabled = false, l1.cachemanager.monitorOldGenOnly = true, l1.cachemanager.percentageToEvict = 10, l1.cachemanager.sleepInterval = 3000, l1.cachemanager.threshold = 70, l1.connect.versionMatchCheck.enabled = true, l1.healthcheck.l2.bindAddress = 0.0.0.0, l1.healthcheck.l2.bindPort = 0, l1.healthcheck.l2.ping.enabled = true, l1.healthcheck.l2.ping.idletime = 5000, l1.healthcheck.l2.ping.interval = 1000, l1.healthcheck.l2.ping.probes = 3, l1.healthcheck.l2.socketConnect = true, l1.healthcheck.l2.socketConnectCount = 13, l1.healthcheck.l2.socketConnectTimeout = 5, l1.jvm.check.compatibility = true, l1.l2.config.validation.enabled = true, l1.lock.statistics.gatherInterval = 1, l1.lock.statistics.traceDepth = 0, l1.lockmanager.striped.count = 128, l1.lockmanager.timeout.interval = 60000, l1.max.connect.retries = -1, l1.modules.additional = , l1.modules.default = org.terracotta.modules.excludes-config;bundle-version:=3.1.0,org.terracotta.modules.guimodels-config;bundle-version:=3.1.0,org.terracotta.modules.jdk15-preinst-config;bundle-version:=3.1.0,org.terracotta.modules.standard-config;bundle-version:=3.1.0, l1.modules.repositories = , l1.modules.tc-version-check = , l1.objectmanager.fault.logging.enabled = false, l1.objectmanager.flush.logging.enabled = false, l1.objectmanager.objectid.request.size = 50000, l1.objectmanager.remote.logging.enabled = false, l1.objectmanager.remote.maxDNALRUSize = 60, l1.seda.stage.sink.capacity = -1, l1.serverarray.objectCreationStrategy = round-robin, l1.serverarray.objectCreationStrategy.groupAffinity.groupName = mirror-group1, l1.serverarray.objectCreationStrategy.roundRobin.startIndex = sequential, l1.socket.connect.timeout = 10000, l1.socket.reconnect.waitInterval = 1000, l1.transactionmanager.completedAckFlushTimeout = 5000, l1.transactionmanager.folding.debug = false, l1.transactionmanager.folding.enabled = true, l1.transactionmanager.folding.lock.limit = 0, l1.transactionmanager.folding.object.limit = 0, l1.transactionmanager.logging.enabled = false, l1.transactionmanager.maxBatchSizeInKiloBytes = 128, l1.transactionmanager.maxOutstandingBatchSize = 4, l1.transactionmanager.maxPendingBatches = 88, l1.transactionmanager.maxSleepTimeBeforeHalt = 1024, l1.transactionmanager.strings.compress.enabled = true, l1.transactionmanager.strings.compress.logging.enabled = false, l1.transactionmanager.strings.compress.minSize = 512, l1.transactionmanager.timeoutForAckOnExit = 300, l2.beanshell.enabled = false, l2.beanshell.port = 9929, l2.berkeleydb.je.checkpointer.bytesInterval = 100000000, l2.berkeleydb.je.cleaner.bytesInterval = 20000000, l2.berkeleydb.je.cleaner.detailMaxMemoryPercentage = 5, l2.berkeleydb.je.cleaner.lookAheadCacheSize = 32768, l2.berkeleydb.je.cleaner.minAge = 5, l2.berkeleydb.je.lock.nLockTables = 7, l2.berkeleydb.je.lock.timeout = 180000000, l2.berkeleydb.je.maxMemoryPercent = 25, l2.cachemanager.criticalObjectThreshold = -1, l2.cachemanager.criticalThreshold = 90, l2.cachemanager.enabled = true, l2.cachemanager.leastCount = 2, l2.cachemanager.logging.enabled = false, l2.cachemanager.monitorOldGenOnly = true, l2.cachemanager.percentageToEvict = 10, l2.cachemanager.sleepInterval = 3000, l2.cachemanager.threshold = 70, l2.data.backup.throttle.timeInMillis = 0, l2.healthcheck.l1.ping.enabled = true, l2.healthcheck.l1.ping.idletime = 5000, l2.healthcheck.l1.ping.interval = 1000, l2.healthcheck.l1.ping.probes = 3, l2.healthcheck.l1.socketConnect = true, l2.healthcheck.l1.socketConnectCount = 10, l2.healthcheck.l1.socketConnectTimeout = 5, l2.healthcheck.l2.ping.enabled = true, l2.healthcheck.l2.ping.idletime = 5000, l2.healthcheck.l2.ping.interval = 1000, l2.healthcheck.l2.ping.probes = 3, l2.healthcheck.l2.socketConnect = true, l2.healthcheck.l2.socketConnectCount = 10, l2.healthcheck.l2.socketConnectTimeout = 5, l2.l1reconnect.enabled = false, l2.l1reconnect.maxDelayedAcks = 16, l2.l1reconnect.sendWindow = 32, l2.l1reconnect.sendqueue.cap = 5000, l2.l1reconnect.timeout.millis = 5000, l2.lfu.agingFactor = 1, l2.lfu.debug.enabled = false, l2.lfu.recentlyAccessedIgnorePercentage = 20, l2.lockmanager.greedy.lease.enabled = true, l2.lockmanager.greedy.lease.leaseTimeInMillis = 50, l2.nha.autoRestart = true, l2.nha.dirtydb.autoDelete = true, l2.nha.dirtydb.rolling = 0, l2.nha.send.timeout.millis = 16000, l2.nha.tcgroupcomm.discovery.interval = 1000, l2.nha.tcgroupcomm.handshake.timeout = 5000, l2.nha.tcgroupcomm.reconnect.enabled = false, l2.nha.tcgroupcomm.reconnect.maxDelayedAcks = 16, l2.nha.tcgroupcomm.reconnect.sendWindow = 32, l2.nha.tcgroupcomm.reconnect.sendqueue.cap = 5000, l2.nha.tcgroupcomm.reconnect.timeout = 5000, l2.objectmanager.cachePolicy = lfu, l2.objectmanager.deleteBatchSize = 5000, l2.objectmanager.dgc.throttle.requestsPerThrottle = 1000, l2.objectmanager.dgc.throttle.timeInMillis = 0, l2.objectmanager.dgc.young.enabled = false, l2.objectmanager.dgc.young.frequencyInMillis = 180000, l2.objectmanager.fault.logging.enabled = false, l2.objectmanager.flush.logging.enabled = false, l2.objectmanager.loadObjectID.checkpoint.maxlimit = -1, l2.objectmanager.loadObjectID.checkpoint.maxsleep = 10000, l2.objectmanager.loadObjectID.fastLoad = true, l2.objectmanager.loadObjectID.longsPerDiskEntry = 8, l2.objectmanager.loadObjectID.mapsdatabase.longsPerDiskEntry = 1, l2.objectmanager.maxObjectsInTxnObjGrouping = 5000, l2.objectmanager.maxObjectsToCommit = 5000, l2.objectmanager.maxTxnsInTxnObjectGrouping = 500, l2.objectmanager.objectrequest.logging.enabled = false, l2.objectmanager.objectrequest.split.size = 5, l2.objectmanager.passive.sync.batch.size = 500, l2.objectmanager.passive.sync.throttle.timeInMillis = 0, l2.objectmanager.persistor.logging.enabled = false, l2.objectmanager.persistor.measure.performance = false, l2.objectmanager.request.logging.enabled = false, l2.remotejmx.idletime = 5, l2.remotejmx.maxthreads = 50, l2.seda.commitstage.threads = 4, l2.seda.faultstage.threads = 4, l2.seda.flushstage.threads = 4, l2.seda.gcdeletestage.threads = 1, l2.seda.managedobjectrequeststage.threads = 1, l2.seda.managedobjectresponsestage.threads = 4, l2.seda.stage.sink.capacity = -1, l2.serverarray.2pc.enabled = true, l2.startuplock.retries.enabled = false, l2.transactionmanager.logging.enabled = false, l2.transactionmanager.logging.printBroadcastStats = false, l2.transactionmanager.logging.printCommits = false, l2.transactionmanager.logging.printStats = true, l2.transactionmanager.logging.verbose = false, l2.transactionmanager.passive.throttle.enabled = true, l2.transactionmanager.passive.throttle.maxSleepSeconds = 5, l2.transactionmanager.passive.throttle.threshold = 20000, lock.statistics.enabled = false, logging.longgc.threshold = 8000, logging.maxBackups = 20, logging.maxLogFileSize = 512, memory.monitor.forcebasic = false, net.core.keepalive = false, net.core.tcpnodelay = true, session.debug.hops = false, session.debug.hops.interval = 100, session.debug.invalidate = false, session.debug.sessions = false, session.invalidator.bench.enabled = true, session.invalidator.sleep = 300, session.request.bench.enabled = false, session.request.tracking = false, session.request.tracking.dump = false, session.request.tracking.interval = 2500, session.request.tracking.threshold = 15000, session.vhosts.excluded = , stats.printer.intervalInMillis = 5000, tc.bytebuffer.common.pool.maxcount = 3000, tc.bytebuffer.pooling.enabled = true, tc.bytebuffer.threadlocal.pool.maxcount = 2000, tc.management.mbeans.enabled = true, tc.management.test.mbeans.enabled = false, tc.stage.monitor.delay = 5000, tc.stage.monitor.enabled = false, tcm.monitor.delay = 5, tcm.monitor.enabled = false }
+2009-12-30 01:26:08,117 [main] INFO com.terracottatech.console - Log file: 'F:\我的文件夹\Workspace\AssignAgents_r2\terracotta\server-logs\terracotta-server.log'.
+2009-12-30 01:26:08,117 [main] INFO com.tc.logging.TCLogging - All Java System Properties for this Terracotta instance:
+========================================================================
+awt.toolkit                              : sun.awt.windows.WToolkit
+com.sun.management.jmxremote             : 
+com.sun.management.jmxremote.authenticate: false
+file.encoding                            : GBK
+file.encoding.pkg                        : sun.io
+file.separator                           : \
+java.awt.graphicsenv                     : sun.awt.Win32GraphicsEnvironment
+java.awt.printerjob                      : sun.awt.windows.WPrinterJob
+java.class.path                          : D:\Program Files\eclipse\plugins\org.terracotta.dso_3.1.0.r13440_v20090820\lib\resources;D:\Program Files\eclipse\plugins\org.terracotta.dso_3.1.0.r13440_v20090820\lib\tc.jar
+java.class.version                       : 50.0
+java.endorsed.dirs                       : D:\Program Files\Java\jre6\lib\endorsed
+java.ext.dirs                            : D:\Program Files\Java\jre6\lib\ext;C:\Windows\Sun\Java\lib\ext
+java.home                                : D:\Program Files\Java\jre6
+java.io.tmpdir                           : C:\Users\XIAOYA~1\AppData\Local\Temp\
+java.library.path                        : D:\Program Files\Java\jre6\bin;.;C:\Windows\Sun\Java\bin;C:\Windows\system32;C:\Windows;D:/Program Files/Java/jre6/bin/client;D:/Program Files/Java/jre6/bin;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Program Files\Common Files\Thunder Network\KanKan\Codecs;C:\Windows\System32\WindowsPowerShell\v1.0\;D:\Program Files\MATLAB\R2009a\bin;D:\Program Files\MATLAB\R2009a\bin\win32;D:\Program Files\Pure Codec\QTSystem\;D:\Program Files\Java\jdk1.6.0_16\bin;D:\Program Files\Java\jre\bin;D:\Program Files\JLex;D:\mysql-5.1.41-win32\bin;
+java.rmi.server.randomIDs                : true
+java.runtime.name                        : Java(TM) SE Runtime Environment
+java.runtime.version                     : 1.6.0_16-b01
+java.specification.name                  : Java Platform API Specification
+java.specification.vendor                : Sun Microsystems Inc.
+java.specification.version               : 1.6
+java.vendor                              : Sun Microsystems Inc.
+java.vendor.url                          : http://java.sun.com/
+java.vendor.url.bug                      : http://java.sun.com/cgi-bin/bugreport.cgi
+java.version                             : 1.6.0_16
+java.vm.info                             : mixed mode, sharing
+java.vm.name                             : Java HotSpot(TM) Client VM
+java.vm.specification.name               : Java Virtual Machine Specification
+java.vm.specification.vendor             : Sun Microsystems Inc.
+java.vm.specification.version            : 1.0
+java.vm.vendor                           : Sun Microsystems Inc.
+java.vm.version                          : 14.2-b01
+line.separator                           : 
+
+os.arch                                  : x86
+os.name                                  : Windows 7
+os.version                               : 6.1
+path.separator                           : ;
+sun.arch.data.model                      : 32
+sun.boot.class.path                      : D:\Program Files\Java\jre6\lib\resources.jar;D:\Program Files\Java\jre6\lib\rt.jar;D:\Program Files\Java\jre6\lib\sunrsasign.jar;D:\Program Files\Java\jre6\lib\jsse.jar;D:\Program Files\Java\jre6\lib\jce.jar;D:\Program Files\Java\jre6\lib\charsets.jar;D:\Program Files\Java\jre6\classes
+sun.boot.library.path                    : D:\Program Files\Java\jre6\bin
+sun.cpu.endian                           : little
+sun.cpu.isalist                          : pentium_pro+mmx pentium_pro pentium+mmx pentium i486 i386 i86
+sun.desktop                              : windows
+sun.io.unicode.encoding                  : UnicodeLittle
+sun.java.launcher                        : SUN_STANDARD
+sun.jnu.encoding                         : GBK
+sun.management.compiler                  : HotSpot Client Compiler
+sun.os.patch.level                       : 
+tc.config                                : F:\我的文件夹\Workspace\AssignAgents_r2\tc-config.xml
+tc.install-root                          : D:\Program Files\eclipse\plugins\org.terracotta.dso_3.1.0.r13440_v20090820
+tc.server.name                           : localhost
+user.country                             : CN
+user.dir                                 : F:\我的文件夹\Workspace\AssignAgents_r2
+user.home                                : C:\Users\xiaoyaoth
+user.language                            : zh
+user.name                                : xiaoyaoth
+user.timezone                            : Asia/Shanghai
+user.variant                             : 
+========================================================================
+2009-12-30 01:26:10,521 [main] INFO com.terracottatech.dso - Statistics store: 'F:\我的文件夹\Workspace\AssignAgents_r2\terracotta\cluster-statistics'.
+2009-12-30 01:26:10,537 [main] INFO com.terracottatech.console - Available Max Runtime Memory: 254MB
+2009-12-30 01:26:10,709 [main] INFO com.terracottatech.dso - Standard DSO Server created
+2009-12-30 01:26:10,709 [main] INFO com.terracottatech.dso - Creating server nodeID: NodeID[127.0.0.1:9510]
+2009-12-30 01:26:10,787 [Statistics Logger] INFO com.terracottatech.dso - memory free : 262336696
+2009-12-30 01:26:10,787 [Statistics Logger] INFO com.terracottatech.dso - memory used : 4067144
+2009-12-30 01:26:10,787 [Statistics Logger] INFO com.terracottatech.dso - memory max : 266403840
+2009-12-30 01:26:12,927 [main] INFO com.terracottatech.dso - Statistics buffer: 'F:\我的文件夹\Workspace\AssignAgents_r2\terracotta\cluster-statistics'.
+2009-12-30 01:26:13,067 [main] INFO com.terracottatech.console - JMX Server started. Available at URL[service:jmx:jmxmp://0.0.0.0:9520]
+2009-12-30 01:26:13,130 [main] INFO com.tc.objectserver.persistence.sleepycat.DBEnvironment - Env config = allowCreate=true
+cacheSize=0
+txnNoSync=true
+txnWriteNoSync=false
+{je.cleaner.minAge=5, je.cleaner.bytesInterval=20000000, je.env.isTransactional=true, je.cleaner.lookAheadCacheSize=32768, je.env.isReadOnly=false, je.maxMemoryPercent=25, je.lock.nLockTables=7, je.checkpointer.bytesInterval=100000000, je.cleaner.detailMaxMemoryPercentage=5, je.lock.timeout=180000000}
+ DB Config = allowCreate=true
+exclusiveCreate=false
+transactional=true
+readOnly=false
+duplicatesAllowed=false
+deferredWrite=false
+temporary=false
+keyPrefixingEnabled=false
+ JE Properties = {je.cleaner.detailMaxMemoryPercentage=5, je.cleaner.bytesInterval=20000000, je.maxMemoryPercent=25, je.checkpointer.bytesInterval=100000000, je.cleaner.lookAheadCacheSize=32768, je.lock.nLockTables=7, je.cleaner.minAge=5, je.lock.timeout=180000000}
+2009-12-30 01:26:13,505 [main] INFO com.terracottatech.dso - Database version [2.2]
+2009-12-30 01:26:13,630 [main] INFO com.tc.net.core.TCWorkerCommManager - Creating 2 worker comm threads.
+2009-12-30 01:26:13,645 [main] INFO com.tc.net.protocol.transport.ConnectionHealthCheckerImpl: DSO Server - HealthChecker Started
+2009-12-30 01:26:13,645 [main] INFO com.tc.net.protocol.tcm.CommunicationsManager - HealtCheck CallbackPort Listener not requested
+2009-12-30 01:26:13,676 [main] INFO com.tc.runtime.TCMemoryManagerImpl - GarbageCollector: Copy
+2009-12-30 01:26:13,676 [main] INFO com.tc.runtime.TCMemoryManagerImpl - GarbageCollector: MarkSweepCompact
+2009-12-30 01:26:13,786 [main] INFO com.tc.objectserver.dgc.impl.GarbageCollectorThread - Young Gen Time = -1 Full Gen Time = 3600000
+2009-12-30 01:26:13,817 [main] INFO com.tc.statistics.StatisticRetrievalAction - "message monitor" statistic is not enabled. Please enable the property "tcm.monitor.delay" to collect this statistics.
+2009-12-30 01:26:13,817 [main] INFO com.tc.statistics.retrieval.actions.SRAL2FaultsFromDisk - "l2 faults from disk" statistic is not enabled. Please enable the property "l2.objectmanager.fault.logging.enabled" to collect this statistic.
+2009-12-30 01:26:13,817 [main] INFO com.terracottatech.dso - This L2 Node ID = NodeID[CurrentNode]
+2009-12-30 01:26:13,817 [main] INFO com.tc.objectserver.tx.ServerTransactionManager - Waiting for txns to complete
+2009-12-30 01:26:13,817 [main] INFO com.tc.objectserver.tx.ServerTransactionManager - No more txns in the system.
+2009-12-30 01:26:13,817 [main] INFO com.tc.objectserver.tx.ResentTransactionSequencer - Making callback com.tc.objectserver.gtx.GlobalTransactionIDLowWaterMarkProvider$2@a030d6 pending since in State[ ADD_RESENT ] resent txns size : 0
+2009-12-30 01:26:13,817 [main] INFO com.tc.objectserver.handshakemanager.ServerClientHandshakeManager - Starting DSO services...
+2009-12-30 01:26:13,817 [main] INFO com.tc.objectserver.persistence.impl.TransactionStoreImpl - shutdownAllClientsExcept() : Removing txns from DB : 0
+2009-12-30 01:26:13,817 [main] INFO com.tc.objectserver.impl.ObjectRequestManagerRestartImpl - Processing Pending Lookups = 0
+2009-12-30 01:26:13,817 [main] INFO com.tc.objectserver.tx.ResentTransactionSequencer - Unregistering ResentTransactionSequencer since no more resent Transactions : 0
+2009-12-30 01:26:13,817 [main] INFO com.tc.objectserver.tx.ResentTransactionSequencer - Adding Pending resent CallBacks to  TxnMgr : com.tc.objectserver.gtx.GlobalTransactionIDLowWaterMarkProvider$2@a030d6
+2009-12-30 01:26:13,817 [main] INFO com.tc.objectserver.gtx.GlobalTransactionIDLowWaterMarkProvider - Switching GlobalTransactionID Low Water mark provider since all resent transactions are applied
+2009-12-30 01:26:13,832 [main] INFO com.terracottatech.console - Terracotta Server instance has started up as ACTIVE node on 0.0.0.0:9510 successfully, and is now ready for work.
+2009-12-30 01:26:13,864 [main] INFO com.tc.server.TCServer - Server started as localhost
+2009-12-30 01:26:13,864 [Update Checker] INFO com.tc.server.UpdateCheckAction - Update Checker: Checking...
+2009-12-30 01:26:13,957 [Update Checker] INFO com.tc.server.UpdateCheckAction - Update Checker: Check failed (java.net.UnknownHostException: www.terracotta.org)
+2009-12-30 01:26:13,957 [Update Checker] INFO com.tc.server.UpdateCheckAction - Update Checker: Next check at Wed Jan 06 01:26:13 CST 2010
+2009-12-30 01:26:18,154 [TCComm Main Selector Thread (listen 0.0.0.0:9510)] INFO com.tc.net.protocol.transport.ServerMessageTransport - ConnectionID(0.4c060d831edc4f30b09ba29a3a3d9ab6): Attaching new connection: com.tc.net.core.TCConnectionJDK14@6322407: connected: true, closed: false local=127.0.0.1:9510 remote=127.0.0.1:50508 connect=[Wed Dec 30 01:26:18 CST 2009] idle=16ms [28 read, 0 write]
+2009-12-30 01:26:18,154 [TCComm Main Selector Thread (listen 0.0.0.0:9510)] WARN com.tc.net.core.CoreNIOServices - Exception trying to process interest request: java.nio.channels.CancelledKeyException
+2009-12-30 01:26:18,154 [TCComm Main Selector Thread (listen 0.0.0.0:9510)] INFO com.tc.net.core.TCWorkerCommManager - Selecting [TCWorkerComm # 0, wt:0]  from [[TCWorkerComm # 0, wt:0], [TCWorkerComm # 1, wt:0]]
+2009-12-30 01:26:18,169 [TCWorkerComm # 0] INFO com.tc.net.protocol.transport.ConnectionHealthCheckerImpl. DSO Server - Health monitoring agent started for xiaoyaoth-PC:50508
+2009-12-30 01:26:18,169 [TCComm Main Selector Thread (listen 0.0.0.0:9510)] INFO com.tc.net.protocol.transport.ConnectionHealthCheckerImpl. DSO Server - HealthCheckCallbackPort verification PASSED for xiaoyaoth-PC:50508(callbackport: 50507)
+2009-12-30 01:26:18,185 [WorkerThread(jmxremote_tunnel_stage,0)] INFO com.tc.management.remote.protocol.terracotta.ClientTunnelingEventHandler - L1[ChannelID=[0]] notified us that their JMX server is now available
+2009-12-30 01:26:18,185 [WorkerThread(client_handshake_stage,0)] INFO com.tc.objectserver.handshakemanager.ServerClientHandshakeManager - Client connected ClientID[0]
+2009-12-30 01:26:18,530 [WorkerThread(jmxremote_connect_stage,0)] INFO com.tc.management.remote.connect.ClientConnectEventHandler - Tunneled MBean 'org.terracotta.internal:name=Terracotta Statistics Emitter,subsystem=Statistics,type=Terracotta Agent,clients=Clients,node=xiaoyaoth-PC/50508'
+2009-12-30 01:26:18,546 [WorkerThread(jmxremote_connect_stage,0)] INFO com.tc.management.remote.connect.ClientConnectEventHandler - Tunneled MBean 'org.terracotta:name=Terracotta Cluster Bean,type=Terracotta Cluster,clients=Clients,node=xiaoyaoth-PC/50508'
+2009-12-30 01:26:18,546 [WorkerThread(jmxremote_connect_stage,0)] INFO com.tc.management.remote.connect.ClientConnectEventHandler - Tunneled MBean 'org.terracotta.internal:name=DSO Client Dump Bean,type=DSO Client,clients=Clients,node=xiaoyaoth-PC/50508'
+2009-12-30 01:26:18,561 [WorkerThread(jmxremote_connect_stage,0)] INFO com.tc.management.remote.connect.ClientConnectEventHandler - Tunneled MBean 'org.terracotta:name=Terracotta for Sessions,type=Sessions,clients=Clients,node=xiaoyaoth-PC/50508'
+2009-12-30 01:26:18,592 [WorkerThread(jmxremote_connect_stage,0)] INFO com.tc.management.remote.connect.ClientConnectEventHandler - Tunneled MBean 'org.terracotta:name=Terracotta Instrumentation Logging Bean,subsystem=Logging,type=DSO Client,clients=Clients,node=xiaoyaoth-PC/50508'
+2009-12-30 01:26:18,592 [WorkerThread(jmxremote_connect_stage,0)] INFO com.tc.management.remote.connect.ClientConnectEventHandler - Tunneled MBean 'org.terracotta.internal:name=Client transactions,subsystem=Transactions,type=DSO Client,clients=Clients,node=xiaoyaoth-PC/50508'
+2009-12-30 01:26:18,608 [WorkerThread(jmxremote_connect_stage,0)] INFO com.tc.management.remote.connect.ClientConnectEventHandler - Tunneled MBean 'org.terracotta:name=Terracotta Runtime Logging Bean,subsystem=Logging,type=DSO Client,clients=Clients,node=xiaoyaoth-PC/50508'
+2009-12-30 01:26:18,624 [WorkerThread(jmxremote_connect_stage,0)] INFO com.tc.management.remote.connect.ClientConnectEventHandler - Tunneled MBean 'org.terracotta.internal:name=Terracotta Statistics Manager,subsystem=Statistics,type=Terracotta Agent,clients=Clients,node=xiaoyaoth-PC/50508'
+2009-12-30 01:26:18,639 [WorkerThread(jmxremote_connect_stage,0)] INFO com.tc.management.remote.connect.ClientConnectEventHandler - Tunneled MBean 'org.terracotta:name=L1 Info Bean,type=DSO Client,clients=Clients,node=xiaoyaoth-PC/50508'
+2009-12-30 01:26:18,655 [WorkerThread(jmxremote_connect_stage,0)] INFO com.tc.management.remote.connect.ClientConnectEventHandler - Tunneled MBean 'org.terracotta:name=Terracotta Runtime Output Options Bean,subsystem=Logging,type=DSO Client,clients=Clients,node=xiaoyaoth-PC/50508'
+2009-12-30 01:26:23,432 [TCComm Main Selector Thread (listen 0.0.0.0:9510)] INFO com.tc.net.protocol.transport.ServerMessageTransport - ConnectionID(1.4c060d831edc4f30b09ba29a3a3d9ab6): Attaching new connection: com.tc.net.core.TCConnectionJDK14@10013687: connected: true, closed: false local=127.0.0.1:9510 remote=127.0.0.1:50519 connect=[Wed Dec 30 01:26:23 CST 2009] idle=0ms [28 read, 0 write]
+2009-12-30 01:26:23,432 [TCComm Main Selector Thread (listen 0.0.0.0:9510)] WARN com.tc.net.core.CoreNIOServices - Exception trying to process interest request: java.nio.channels.CancelledKeyException
+2009-12-30 01:26:23,432 [TCComm Main Selector Thread (listen 0.0.0.0:9510)] INFO com.tc.net.core.TCWorkerCommManager - Selecting [TCWorkerComm # 1, wt:0]  from [[TCWorkerComm # 0, wt:1], [TCWorkerComm # 1, wt:0]]
+2009-12-30 01:26:23,432 [TCWorkerComm # 1] INFO com.tc.net.protocol.transport.ConnectionHealthCheckerImpl. DSO Server - Health monitoring agent started for xiaoyaoth-PC:50519
+2009-12-30 01:26:23,448 [TCComm Main Selector Thread (listen 0.0.0.0:9510)] INFO com.tc.net.protocol.transport.ConnectionHealthCheckerImpl. DSO Server - HealthCheckCallbackPort verification PASSED for xiaoyaoth-PC:50519(callbackport: 50518)
+2009-12-30 01:26:23,448 [WorkerThread(jmxremote_tunnel_stage,0)] INFO com.tc.management.remote.protocol.terracotta.ClientTunnelingEventHandler - L1[ChannelID=[1]] notified us that their JMX server is now available
+2009-12-30 01:26:23,448 [WorkerThread(client_handshake_stage,0)] INFO com.tc.objectserver.handshakemanager.ServerClientHandshakeManager - Client connected ClientID[1]
+2009-12-30 01:26:23,667 [WorkerThread(jmxremote_connect_stage,0)] INFO com.tc.management.remote.connect.ClientConnectEventHandler - Tunneled MBean 'org.terracotta.internal:name=Terracotta Statistics Emitter,subsystem=Statistics,type=Terracotta Agent,clients=Clients,node=xiaoyaoth-PC/50519'
+2009-12-30 01:26:23,684 [WorkerThread(jmxremote_connect_stage,0)] INFO com.tc.management.remote.connect.ClientConnectEventHandler - Tunneled MBean 'org.terracotta:name=Terracotta Cluster Bean,type=Terracotta Cluster,clients=Clients,node=xiaoyaoth-PC/50519'
+2009-12-30 01:26:23,700 [WorkerThread(jmxremote_connect_stage,0)] INFO com.tc.management.remote.connect.ClientConnectEventHandler - Tunneled MBean 'org.terracotta.internal:name=DSO Client Dump Bean,type=DSO Client,clients=Clients,node=xiaoyaoth-PC/50519'
+2009-12-30 01:26:23,715 [WorkerThread(jmxremote_connect_stage,0)] INFO com.tc.management.remote.connect.ClientConnectEventHandler - Tunneled MBean 'org.terracotta:name=Terracotta for Sessions,type=Sessions,clients=Clients,node=xiaoyaoth-PC/50519'
+2009-12-30 01:26:23,731 [WorkerThread(jmxremote_connect_stage,0)] INFO com.tc.management.remote.connect.ClientConnectEventHandler - Tunneled MBean 'org.terracotta:name=Terracotta Instrumentation Logging Bean,subsystem=Logging,type=DSO Client,clients=Clients,node=xiaoyaoth-PC/50519'
+2009-12-30 01:26:23,746 [WorkerThread(jmxremote_connect_stage,0)] INFO com.tc.management.remote.connect.ClientConnectEventHandler - Tunneled MBean 'org.terracotta.internal:name=Client transactions,subsystem=Transactions,type=DSO Client,clients=Clients,node=xiaoyaoth-PC/50519'
+2009-12-30 01:26:23,763 [WorkerThread(jmxremote_connect_stage,0)] INFO com.tc.management.remote.connect.ClientConnectEventHandler - Tunneled MBean 'org.terracotta:name=Terracotta Runtime Logging Bean,subsystem=Logging,type=DSO Client,clients=Clients,node=xiaoyaoth-PC/50519'
+2009-12-30 01:26:23,779 [WorkerThread(jmxremote_connect_stage,0)] INFO com.tc.management.remote.connect.ClientConnectEventHandler - Tunneled MBean 'org.terracotta.internal:name=Terracotta Statistics Manager,subsystem=Statistics,type=Terracotta Agent,clients=Clients,node=xiaoyaoth-PC/50519'
+2009-12-30 01:26:23,794 [WorkerThread(jmxremote_connect_stage,0)] INFO com.tc.management.remote.connect.ClientConnectEventHandler - Tunneled MBean 'org.terracotta:name=L1 Info Bean,type=DSO Client,clients=Clients,node=xiaoyaoth-PC/50519'
+2009-12-30 01:26:23,810 [WorkerThread(jmxremote_connect_stage,0)] INFO com.tc.management.remote.connect.ClientConnectEventHandler - Tunneled MBean 'org.terracotta:name=Terracotta Runtime Output Options Bean,subsystem=Logging,type=DSO Client,clients=Clients,node=xiaoyaoth-PC/50519'
+2009-12-30 01:26:24,808 [TCWorkerComm # 1] INFO com.tc.net.core.TCConnection - error reading from channel java.nio.channels.SocketChannel[connected local=/127.0.0.1:9510 remote=/127.0.0.1:50519]: 远程主机强迫关闭了一个现有的连接。
+2009-12-30 01:26:24,808 [TCWorkerComm # 1] INFO com.tc.net.core.TCConnectionManager - error event on connection com.tc.net.core.TCConnectionJDK14@10013687: connected: true, closed: false local=127.0.0.1:9510 remote=127.0.0.1:50519 connect=[Wed Dec 30 01:26:23 CST 2009] idle=951ms [45591 read, 18648 write]: 远程主机强迫关闭了一个现有的连接。
+2009-12-30 01:26:24,808 [TCWorkerComm # 1] WARN com.tc.net.protocol.transport.ServerMessageTransport - ConnectionID(1.4c060d831edc4f30b09ba29a3a3d9ab6): CLOSE EVENT : com.tc.net.core.TCConnectionJDK14@10013687: connected: false, closed: true local=127.0.0.1:9510 remote=127.0.0.1:50519 connect=[Wed Dec 30 01:26:23 CST 2009] idle=951ms [45591 read, 18648 write]. STATUS : ESTABLISHED
+2009-12-30 01:26:24,808 [TCWorkerComm # 1] INFO com.tc.net.protocol.transport.ConnectionHealthCheckerImpl: DSO Server - Connection to [xiaoyaoth-PC:50519] DISCONNECTED. Health Monitoring for this node is now disabled.
+2009-12-30 01:26:24,840 [WorkerThread(channel_life_cycle_stage,0)] INFO com.tc.objectserver.handler.ChannelLifeCycleHandler - : Received transport disconnect.  Shutting down client ClientID[1]
+2009-12-30 01:26:24,840 [WorkerThread(channel_life_cycle_stage,0)] INFO com.tc.objectserver.persistence.impl.TransactionStoreImpl - shutdownClient() : Removing txns from DB : 1
+2009-12-30 01:26:36,865 [TCWorkerComm # 0] INFO com.tc.net.core.TCConnection - error reading from channel java.nio.channels.SocketChannel[connected local=/127.0.0.1:9510 remote=/127.0.0.1:50508]: 远程主机强迫关闭了一个现有的连接。
+2009-12-30 01:26:36,865 [TCWorkerComm # 0] INFO com.tc.net.core.TCConnectionManager - error event on connection com.tc.net.core.TCConnectionJDK14@6322407: connected: true, closed: false local=127.0.0.1:9510 remote=127.0.0.1:50508 connect=[Wed Dec 30 01:26:18 CST 2009] idle=1920ms [44980 read, 21615 write]: 远程主机强迫关闭了一个现有的连接。
+2009-12-30 01:26:36,865 [TCWorkerComm # 0] WARN com.tc.net.protocol.transport.ServerMessageTransport - ConnectionID(0.4c060d831edc4f30b09ba29a3a3d9ab6): CLOSE EVENT : com.tc.net.core.TCConnectionJDK14@6322407: connected: false, closed: true local=127.0.0.1:9510 remote=127.0.0.1:50508 connect=[Wed Dec 30 01:26:18 CST 2009] idle=1920ms [44980 read, 21615 write]. STATUS : ESTABLISHED
+2009-12-30 01:26:36,865 [TCWorkerComm # 0] INFO com.tc.net.protocol.transport.ConnectionHealthCheckerImpl: DSO Server - Connection to [xiaoyaoth-PC:50508] DISCONNECTED. Health Monitoring for this node is now disabled.
+2009-12-30 01:26:36,881 [WorkerThread(channel_life_cycle_stage,0)] INFO com.tc.objectserver.handler.ChannelLifeCycleHandler - : Received transport disconnect.  Shutting down client ClientID[0]
+2009-12-30 01:26:36,881 [WorkerThread(channel_life_cycle_stage,0)] INFO com.tc.objectserver.persistence.impl.TransactionStoreImpl - shutdownClient() : Removing txns from DB : 0
