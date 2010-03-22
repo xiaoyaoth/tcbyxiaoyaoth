@@ -17,59 +17,66 @@
     <dso>
       <instrumented-classes>
         <include>
-          <class-expression>Parse.newClient</class-expression>
+          <class-expression>Parse.Server</class-expression>
         </include>
         <include>
-          <class-expression>java.lang.Thread</class-expression>
+          <class-expression>Parse.Parse</class-expression>
         </include>
         <include>
-          <class-expression>Parse.newParse</class-expression>
-        </include>
-        <include>
-          <class-expression>Parse.newServer</class-expression>
-        </include>
-        <include>
-          <class-expression>Parse.Manager</class-expression>
+          <class-expression>Parse.Employee</class-expression>
         </include>
         <include>
           <class-expression>Parse.Agent</class-expression>
         </include>
         <include>
-          <class-expression>Parse.Employee</class-expression>
+          <class-expression>Parse.Manager</class-expression>
+        </include>
+        <include>
+          <class-expression>Parse.Message</class-expression>
+        </include>
+        <include>
+          <class-expression>Parse.Client</class-expression>
+        </include>
+        <include>
+          <class-expression>java.lang.Thread</class-expression>
         </include>
       </instrumented-classes>
-      <roots>
-        <root>
-          <field-name>Parse.newServer.outbox</field-name>
-        </root>
-        <root>
-          <field-name>Parse.newClient.JVM_COUNTER</field-name>
-        </root>
-        <root>
-          <field-name>Parse.newServer.conv_fini</field-name>
-        </root>
-        <root>
-          <field-name>Parse.newClient.remove</field-name>
-        </root>
-      </roots>
       <locks>
         <autolock auto-synchronized="false">
-          <method-expression>void Parse.newClient.__INIT__()</method-expression>
+          <method-expression>void Parse.Client.__INIT__()</method-expression>
           <lock-level>write</lock-level>
         </autolock>
         <autolock auto-synchronized="false">
-          <method-expression>void Parse.newClient.main(java.lang.String[])</method-expression>
+          <method-expression>void Parse.Client.main(java.lang.String[])</method-expression>
           <lock-level>write</lock-level>
         </autolock>
         <autolock auto-synchronized="false">
-          <method-expression>void Parse.newClient.run()</method-expression>
+          <method-expression>void Parse.Client.run()</method-expression>
           <lock-level>write</lock-level>
         </autolock>
         <autolock auto-synchronized="false">
-          <method-expression>void Parse.newServer.main(java.lang.String[])</method-expression>
+          <method-expression>void Parse.Server.main(java.lang.String[])</method-expression>
+          <lock-level>write</lock-level>
+        </autolock>
+        <autolock auto-synchronized="false">
+          <method-expression>void Parse.Server.setCoviFini()</method-expression>
           <lock-level>write</lock-level>
         </autolock>
       </locks>
+      <roots>
+        <root>
+          <field-name>Parse.Client.JVM_counter</field-name>
+        </root>
+        <root>
+          <field-name>Parse.Client.fini</field-name>
+        </root>
+        <root>
+          <field-name>Parse.Client.cases</field-name>
+        </root>
+        <root>
+          <field-name>Parse.Server.conv_fini</field-name>
+        </root>
+      </roots>
     </dso>
   </application>
 </con:tc-config>
