@@ -16,7 +16,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 
-public class newParse {
+public class Parse {
 
 	static ArrayList<ArrayList<String>> table = new ArrayList<ArrayList<String>>();
 	static int instance_amount = -1;
@@ -28,7 +28,7 @@ public class newParse {
 	static int index;
 	static ArrayList<String> roles = new ArrayList<String>();
 
-	newParse() throws ParserConfigurationException, SAXException, IOException {
+	Parse() throws ParserConfigurationException, SAXException, IOException {
 		DocumentBuilderFactory domfac = DocumentBuilderFactory.newInstance();
 		DocumentBuilder dombuilder = domfac.newDocumentBuilder();
 		InputStream is = new FileInputStream(
@@ -102,7 +102,7 @@ public class newParse {
 
 	public static void main(String[] args) {
 		try {
-			new newParse();
+			new Parse();
 		} catch (ParserConfigurationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
