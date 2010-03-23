@@ -68,9 +68,6 @@
           <field-name>Parse.Client.JVM_counter</field-name>
         </root>
         <root>
-          <field-name>Parse.Client.fini</field-name>
-        </root>
-        <root>
           <field-name>Parse.Client.cases</field-name>
         </root>
         <root>
