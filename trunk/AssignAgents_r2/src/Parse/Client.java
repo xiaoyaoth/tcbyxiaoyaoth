@@ -5,7 +5,7 @@ import java.util.ArrayList;
 public class Client extends Thread {
 	private int JVM_id;
 	public static int JVM_counter;
-	public static int fini;
+	public int pointer;
 	public static ArrayList<Server> cases = new ArrayList<Server>();
 
 	Client() {
@@ -21,9 +21,10 @@ public class Client extends Thread {
 
 	public void run() {
 		Integer id = JVM_id;
+		pointer = 0;
 		while (true) {
-			if (!cases.isEmpty()) {
-				Server oneSenario = cases.get(0);
+			if (cases.size()-1>=pointer) {
+				Server oneSenario = cases.get(pointer);
 				if (oneSenario.conv_fini) {
 					ArrayList<ArrayList<String>> oneCase = oneSenario.caseTable;
 					System.out.println(oneCase);
@@ -45,19 +46,17 @@ public class Client extends Thread {
 						}
 						System.out.println(ag);
 					}
-					fini++;
-					while (fini != JVM_counter) {
-						try {
-							sleep(1000);
-						} catch (InterruptedException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-					}
-					fini = 0;
-					synchronized (cases) {
-						cases.remove(0);
-					}
+					System.out
+							.println("[This scenario is completely arranged!]");
+					System.out.println();
+					pointer++;
+				}
+			} else {
+				try {
+					sleep(1000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
 			}
 			try {
